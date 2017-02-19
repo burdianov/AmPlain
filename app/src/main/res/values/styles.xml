@@ -1,11 +1,45 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="LoginCard">
+        <item name="android:layout_marginLeft">@dimen/spacing_medium_plus_36
+        </item>
+        <item name="android:layout_marginRight">@dimen/spacing_medium_plus_36
+        </item>
+        <item name="cardBackgroundColor">@android:color/white</item>
+        <item name="cardCornerRadius">@dimen/corner_radius_2</item>
+        <item name="contentPadding">@dimen/spacing_normal_16</item>
+        <item name="cardElevation">@dimen/spacing_tiny_4</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_small_8</item>
+    </style>
+
+    <style name="CustomButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/size_medium_56</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/font_small_12</item>
+        <!--TODO: use the custom font properly-->
+        <!--<item name="android:fontFamily">@string/roboto-regular</item>-->
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginLeft">@dimen/spacing_medium_32</item>
+        <item name="android:layout_marginRight">@dimen/spacing_medium_32</item>
+    </style>
+
+    <style name="StartBtn" parent="Base.Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@color/colorAccent</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="ShowBtn" parent="Base.Widget.AppCompat.Button">
+        <item name="colorButtonNormal">@android:color/white</item>
+        <item name="android:textColor">@android:color/black</item>
     </style>
 
 </resources>

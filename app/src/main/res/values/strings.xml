@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">AmPlain</string>
+    <string name="app_name">AndroidMiddlePlain</string>
+    <string name="enter_email">Enter email</string>
+    <string name="enter_password">Enter password</string>
+    <string name="view_catalog">View catalog</string>
+    <string name="login">Login</string>
 </resources>
