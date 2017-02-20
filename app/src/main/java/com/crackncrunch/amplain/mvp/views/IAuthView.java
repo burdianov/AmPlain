@@ -9,11 +9,7 @@ import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
  * Created by Lilian on 19-Feb-17.
  */
 
-public interface IAuthView {
-    void showMessage(String message);
-    void showError(Throwable e);
-    void showLoad();
-    void hideLoad();
+public interface IAuthView extends IView{
 
     IAuthPresenter getPresenter();
 
@@ -22,4 +18,6 @@ public interface IAuthView {
 
     @Nullable
     AuthPanel getAuthPanel();
+
+    void showCatalogScreen();
 }

@@ -1,7 +1,35 @@
 <resources>
+    <!-- Fonts -->
+    <string name="roboto_regular">sans-serif</string>
+    <string name="roboto_light">sans-serif-light</string>
+    <string name="roboto_condensed">sans-serif-condensed</string>
+    <string name="roboto_black">sans-serif-black</string>
+    <string name="roboto_thin">sans-serif-thin</string>
+    <string name="roboto_medium">sans-serif-medium</string>
+
+    <!-- Misc -->
     <string name="app_name">AndroidMiddlePlain</string>
     <string name="enter_email">Enter email</string>
     <string name="enter_password">Enter password</string>
     <string name="view_catalog">View catalog</string>
     <string name="login">Login</string>
+    <string name="personal_profile">Personal Profile</string>
+    <string name="items_catalog">Items Catalog</string>
+    <string name="favorites">Favorites</string>
+    <string name="my_orders">My Orders</string>
+    <string name="my_notifications">My Notifications</string>
+    <string name="user_first_name">User First Name</string>
+    <string name="open_drawer">open</string>
+    <string name="close_drawer">close</string>
+    <string name="dummy_content_description">Dummy content description</string>
+    <string name="sample_item">Sample Item</string>
+    <string name="price">Price</string>
+    <string name="sample_price">26567</string>
+    <string name="quantity">Quantity</string>
+    <string name="lorem_ipsum">Donec et ex laoreet, aliquet metus in, malesuada
+        ligula. Promto di carste psi. Jacara dikili nihai skarula, hanta
+        buhiskili ba</string>
+    <string name="error_message">Something went wrong, try again later</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_to_cart">Add to Cart</string>
 </resources>

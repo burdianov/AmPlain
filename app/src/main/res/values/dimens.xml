@@ -4,6 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- Fonts // English and English-like scripts -->
+    <dimen name="font_small_10">10sp</dimen>
     <dimen name="font_small_12">12sp</dimen>
     <dimen name="font_small_14">14sp</dimen>
     <dimen name="font_normal_16">16sp</dimen>
@@ -29,19 +30,24 @@
     <dimen name="size_large_88">88dp</dimen>
     <dimen name="size_huge_112">112dp</dimen>
     <dimen name="size_huge_128">128dp</dimen>
+    <dimen name="size_nav_header_160">160dp</dimen>
 
     <!-- Spaces // Determine placement of type and icons from edges of elements. -->
     <!-- The text box offset is set to Leading (Type > Area Type Options).-->
+    <dimen name="spacing_zero">0dp</dimen>
     <dimen name="spacing_tiny_4">4dp</dimen>
     <dimen name="spacing_small_8">8dp</dimen>
+    <dimen name="spacing_small_12">12dp</dimen>
     <dimen name="spacing_normal_16">16dp</dimen>
     <dimen name="spacing_medial_24">24dp</dimen>
     <dimen name="spacing_medial_28">28dp</dimen>
     <dimen name="spacing_medium_32">32dp</dimen>
     <dimen name="spacing_medium_plus_36">36dp</dimen>
     <dimen name="spacing_bigger_40">40dp</dimen>
+    <dimen name="spacing_bigger_44">44dp</dimen>
     <dimen name="spacing_bigger_plus_48">48dp</dimen>
     <dimen name="spacing_large_56">56dp</dimen>
+    <dimen name="spacing_large_60">60dp</dimen>
     <dimen name="spacing_large_64">64dp</dimen>
     <dimen name="spacing_larger_72">72dp</dimen>
     <dimen name="spacing_larger_80">80dp</dimen>
@@ -57,4 +63,11 @@
     <dimen name="line_size_2">2dp</dimen>
     <dimen name="login_logo_width_70">70dp</dimen>
     <dimen name="login_logo_height_100">100dp</dimen>
+
+    <!-- Dimensions -->
+    <dimen name="count_button_width">44dp</dimen>
+    <dimen name="count_button_height">44dp</dimen>
+    <dimen name="count_button_padding">12dp</dimen>
+    <dimen name="avatar_padding_top">16dp</dimen>
+    <dimen name="product_image_height">180dp</dimen>
 </resources>

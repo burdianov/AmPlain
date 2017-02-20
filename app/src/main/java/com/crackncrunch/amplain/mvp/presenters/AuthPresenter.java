@@ -1,12 +1,11 @@
 package com.crackncrunch.amplain.mvp.presenters;
 
-import android.support.annotation.Nullable;
-
 import com.crackncrunch.amplain.mvp.models.AuthModel;
 import com.crackncrunch.amplain.mvp.views.IAuthView;
 import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
 
-public class AuthPresenter implements IAuthPresenter {
+public class AuthPresenter extends AbstractPresenter<IAuthView> implements
+        IAuthPresenter {
 
     private static AuthPresenter sInstance = new AuthPresenter();
     private AuthModel mAuthModel;
@@ -21,16 +20,6 @@ public class AuthPresenter implements IAuthPresenter {
     }
 
     @Override
-    public void takeView(IAuthView authView) {
-        mAuthView = authView;
-    }
-
-    @Override
-    public void dropView() {
-        mAuthView = null;
-    }
-
-    @Override
     public void initView() {
         if (getView() != null) {
             if (checkUserAuth()) {
@@ -39,12 +28,6 @@ public class AuthPresenter implements IAuthPresenter {
                 getView().showLoginBtn();
             }
         }
-    }
-
-    @Nullable
-    @Override
-    public IAuthView getView() {
-        return mAuthView;
     }
 
     @Override
@@ -87,6 +70,8 @@ public class AuthPresenter implements IAuthPresenter {
     public void clickOnShowCatalog() {
         if (getView() != null) {
             getView().showMessage("Show the catalog");
+            // TODO: 20-Feb-17 If update data complete, start Catalog Screen
+            getView().showCatalogScreen();
         }
     }
 

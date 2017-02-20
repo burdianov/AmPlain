@@ -1,65 +1,112 @@
 package com.crackncrunch.amplain.ui.activities;
 
+import android.app.ProgressDialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.widget.FrameLayout;
 
 import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
-import com.crackncrunch.amplain.mvp.presenters.AuthPresenter;
-import com.crackncrunch.amplain.mvp.presenters.IAuthPresenter;
-import com.crackncrunch.amplain.mvp.views.IAuthView;
-import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
+import com.crackncrunch.amplain.mvp.views.IView;
+import com.crackncrunch.amplain.ui.fragments.AccountFragment;
+import com.crackncrunch.amplain.ui.fragments.CatalogFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RootActivity extends AppCompatActivity implements IAuthView, View.OnClickListener {
+public class RootActivity extends AppCompatActivity implements IView, NavigationView
+        .OnNavigationItemSelectedListener {
 
-    AuthPresenter mPresenter = AuthPresenter.getInstance();
-
+    @BindView(R.id.drawer_layout)
+    DrawerLayout mDrawer;
+    @BindView(R.id.nav_view)
+    NavigationView mNavigationView;
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
     @BindView(R.id.coordinator_container)
-    CoordinatorLayout mCoordinatorLayout;
+    CoordinatorLayout mCoordinatorContainer;
+    @BindView(R.id.fragment_container)
+    FrameLayout mFragmentContainer;
 
-    @BindView(R.id.auth_wrapper)
-    AuthPanel mAuthPanel;
+    protected ProgressDialog mProgressDialog;
 
-    @BindView(R.id.show_catalog_btn)
-    Button mShowCatalogBtn;
-
-    @BindView(R.id.login_btn)
-    Button mLoginBtn;
-
-    //region ==================== Life cycle ================
+    FragmentManager mFragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_root);
         ButterKnife.bind(this);
-        mPresenter.takeView(this);
-        mPresenter.initView();
 
-        mLoginBtn.setOnClickListener(this);
-        mShowCatalogBtn.setOnClickListener(this);
+        initToolbar();
+        initDrawer();
+
+        mFragmentManager = getSupportFragmentManager();
+        if (savedInstanceState == null) {
+            mFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container,
+                            new CatalogFragment())
+                    .commit();
+        }
+    }
+
+    private void initDrawer() {
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,
+                mDrawer, mToolbar, R.string.open_drawer, R.string.close_drawer);
+        mDrawer.setDrawerListener(toggle);
+        toggle.syncState();
+        mNavigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void initToolbar() {
+        setSupportActionBar(mToolbar);
     }
 
     @Override
-    protected void onDestroy() {
-        mPresenter.dropView();
-        super.onDestroy();
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment = null;
+        switch (item.getItemId()) {
+            case R.id.nav_account:
+                fragment = new AccountFragment();
+                break;
+            case R.id.nav_catalog:
+                fragment = new CatalogFragment();
+                break;
+            case R.id.nav_favorites:
+                break;
+            case R.id.nav_orders:
+                break;
+            case R.id.nav_notifications:
+                break;
+        }
+        if (fragment != null) {
+            mFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+        mDrawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
-    //endregion
-
-    //region ==================== IAuthView ===============
+    //region ==================== IView ===================
 
     @Override
     public void showMessage(String message) {
-        Snackbar.make(mCoordinatorLayout, message, Snackbar.LENGTH_LONG).show();
+        Snackbar.make(mCoordinatorContainer, message, Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -68,62 +115,34 @@ public class RootActivity extends AppCompatActivity implements IAuthView, View.O
             showMessage(e.getMessage());
             e.printStackTrace();
         } else {
-            showMessage("Sorry, something went wrong! Try again later");
-            // TODO: 21-Oct-16 send error stacktrace to crashlitics
+            showMessage(getString(R.string.error_message));
+            // TODO: 22-Oct-16 send error stacktrace to crashlytics
         }
     }
 
     @Override
     public void showLoad() {
-        // TODO: 21-Oct-16 show load progress
+        if (mProgressDialog == null) {
+            mProgressDialog = new ProgressDialog(this, R.style.CustomDialog);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable
+                    (Color.TRANSPARENT));
+            mProgressDialog.show();
+            mProgressDialog.setContentView(R.layout.progress_splash);
+        } else {
+            mProgressDialog.show();
+            mProgressDialog.setContentView(R.layout.progress_splash);
+        }
     }
 
     @Override
     public void hideLoad() {
-        // TODO: 21-Oct-16 hide load progress
-    }
-
-    @Override
-    public IAuthPresenter getPresenter() {
-        return mPresenter;
-    }
-
-    @Override
-    public void showLoginBtn() {
-        mLoginBtn.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideLoginBtn() {
-        mLoginBtn.setVisibility(View.GONE);
-    }
-
-    @Override
-    public AuthPanel getAuthPanel() {
-        return mAuthPanel;
+        if (mProgressDialog != null) {
+            if (mProgressDialog.isShowing()) {
+                mProgressDialog.hide();
+            }
+        }
     }
 
     //endregion
-
-    @Override
-    public void onBackPressed() {
-        if (!mAuthPanel.isIdle()) {
-            mAuthPanel.setCustomState(AuthPanel.IDLE_STATE);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.show_catalog_btn:
-                mPresenter.clickOnShowCatalog();
-                break;
-            case R.id.login_btn:
-                mPresenter.clickOnLogin();
-                break;
-        }
-    }
 }
-
