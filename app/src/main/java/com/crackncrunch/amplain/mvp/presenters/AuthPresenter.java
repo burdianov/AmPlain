@@ -1,22 +1,30 @@
 package com.crackncrunch.amplain.mvp.presenters;
 
+import com.crackncrunch.amplain.di.DaggerService;
+import com.crackncrunch.amplain.di.scopes.AuthScope;
 import com.crackncrunch.amplain.mvp.models.AuthModel;
 import com.crackncrunch.amplain.mvp.views.IAuthView;
 import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
 
+import javax.inject.Inject;
+
+import dagger.Provides;
+
 public class AuthPresenter extends AbstractPresenter<IAuthView> implements
         IAuthPresenter {
 
-    private static AuthPresenter sInstance = new AuthPresenter();
-    private AuthModel mAuthModel;
-    private IAuthView mAuthView;
+    @Inject
+    AuthModel mAuthModel;
 
-    private AuthPresenter() {
+    public AuthPresenter() {
         mAuthModel = new AuthModel();
-    }
 
-    public static AuthPresenter getInstance() {
-        return sInstance;
+        Component component = DaggerService.getComponent(Component.class);
+        if (component == null) {
+            component = createDaggerComponent();
+            DaggerService.registerComponent(Component.class, component);
+        }
+        component.inject(this);
     }
 
     @Override
@@ -79,4 +87,29 @@ public class AuthPresenter extends AbstractPresenter<IAuthView> implements
     public boolean checkUserAuth() {
         return mAuthModel.isAuthUser();
     }
+
+    //region ==================== DI ===================
+
+    @dagger.Module
+    public class Module {
+        @Provides
+        @AuthScope
+        AuthModel provideAuthModel() {
+            return new AuthModel();
+        }
+    }
+
+    @dagger.Component(modules = Module.class)
+    @AuthScope
+    interface Component {
+        void inject(AuthPresenter presenter);
+    }
+
+    private Component createDaggerComponent() {
+        return DaggerAuthPresenter_Component.builder()
+                .module(new Module())
+                .build();
+    }
+
+    //endregion
 }

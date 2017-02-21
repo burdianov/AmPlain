@@ -9,7 +9,7 @@ import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
  * Created by Lilian on 19-Feb-17.
  */
 
-public interface IAuthView extends IView{
+public interface IAuthView extends IRootView {
 
     IAuthPresenter getPresenter();
 

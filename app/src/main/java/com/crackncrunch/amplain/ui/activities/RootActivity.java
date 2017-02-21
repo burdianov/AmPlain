@@ -20,14 +20,21 @@ import android.widget.FrameLayout;
 
 import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
-import com.crackncrunch.amplain.mvp.views.IView;
+import com.crackncrunch.amplain.di.DaggerService;
+import com.crackncrunch.amplain.di.scopes.RootScope;
+import com.crackncrunch.amplain.mvp.presenters.RootPresenter;
+import com.crackncrunch.amplain.mvp.views.IRootView;
 import com.crackncrunch.amplain.ui.fragments.AccountFragment;
 import com.crackncrunch.amplain.ui.fragments.CatalogFragment;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.Provides;
 
-public class RootActivity extends AppCompatActivity implements IView, NavigationView
+public class RootActivity extends AppCompatActivity implements IRootView,
+        NavigationView
         .OnNavigationItemSelectedListener {
 
     @BindView(R.id.drawer_layout)
@@ -45,14 +52,27 @@ public class RootActivity extends AppCompatActivity implements IView, Navigation
 
     FragmentManager mFragmentManager;
 
+    @Inject
+    RootPresenter mRootPresenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_root);
         ButterKnife.bind(this);
 
+        Component component = DaggerService.getComponent(Component.class);
+        if (component == null) {
+            component = createDaggerComponent();
+            DaggerService.registerComponent(Component.class, component);
+        }
+        component.inject(this);
+
         initToolbar();
         initDrawer();
+        mRootPresenter.takeView(this);
+        mRootPresenter.initView();
+        // TODO: 21-Feb-17 init View
 
         mFragmentManager = getSupportFragmentManager();
         if (savedInstanceState == null) {
@@ -61,6 +81,12 @@ public class RootActivity extends AppCompatActivity implements IView, Navigation
                             new CatalogFragment())
                     .commit();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mRootPresenter.dropView();
+        super.onDestroy();
     }
 
     private void initDrawer() {
@@ -102,7 +128,7 @@ public class RootActivity extends AppCompatActivity implements IView, Navigation
         return true;
     }
 
-    //region ==================== IView ===================
+    //region ==================== IRootView ===================
 
     @Override
     public void showMessage(String message) {
@@ -142,6 +168,33 @@ public class RootActivity extends AppCompatActivity implements IView, Navigation
                 mProgressDialog.hide();
             }
         }
+    }
+
+    //endregion
+
+    //region ==================== DI ===================
+
+    private Component createDaggerComponent() {
+        return DaggerRootActivity_Component.builder()
+                .module(new Module())
+                .build();
+    }
+
+    @dagger.Module
+    public class Module {
+
+        @Provides
+        @RootScope
+        RootPresenter provideRootPresenter() {
+            return new RootPresenter();
+        }
+    }
+
+    @dagger.Component(modules = Module.class)
+    @RootScope
+    public interface Component {
+        void inject(RootActivity activity);
+        RootPresenter getRootPresenter();
     }
 
     //endregion

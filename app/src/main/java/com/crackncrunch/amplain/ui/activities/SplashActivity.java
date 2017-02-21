@@ -10,17 +10,23 @@ import android.widget.Button;
 
 import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
+import com.crackncrunch.amplain.di.DaggerService;
+import com.crackncrunch.amplain.di.scopes.AuthScope;
 import com.crackncrunch.amplain.mvp.presenters.AuthPresenter;
 import com.crackncrunch.amplain.mvp.presenters.IAuthPresenter;
 import com.crackncrunch.amplain.mvp.views.IAuthView;
 import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.Provides;
 
 public class SplashActivity extends AppCompatActivity implements IAuthView, View.OnClickListener {
 
-    AuthPresenter mPresenter = AuthPresenter.getInstance();
+    @Inject
+    AuthPresenter mPresenter;
 
     @BindView(R.id.coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
@@ -41,6 +47,14 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         ButterKnife.bind(this);
+
+        Component component = DaggerService.getComponent(Component.class);
+        if (component == null) {
+            component = createDaggerComponent();
+            DaggerService.registerComponent(Component.class, component);
+        }
+        component.inject(this);
+
         mPresenter.takeView(this);
         mPresenter.initView();
 
@@ -51,6 +65,9 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
     @Override
     protected void onDestroy() {
         mPresenter.dropView();
+        if (isFinishing()) {
+            DaggerService.unregisterScope(AuthScope.class);
+        }
         super.onDestroy();
     }
 
@@ -108,6 +125,7 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
     public void showCatalogScreen() {
         Intent intent = new Intent(this, RootActivity.class);
         startActivity(intent);
+        finish();
     }
 
     //endregion
@@ -132,4 +150,29 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
                 break;
         }
     }
+
+    //region ==================== DI ===================
+
+    @dagger.Module
+    public class Module {
+        @Provides
+        @AuthScope
+        AuthPresenter provideAuthPresenter() {
+            return new AuthPresenter();
+        }
+    }
+
+    @dagger.Component(modules = Module.class)
+    @AuthScope
+    interface Component {
+        void inject(SplashActivity activity);
+    }
+
+    private Component createDaggerComponent() {
+        return DaggerSplashActivity_Component.builder()
+                .module(new Module())
+                .build();
+    }
+
+    //endregion
 }

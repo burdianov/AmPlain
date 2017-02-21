@@ -4,7 +4,7 @@ package com.crackncrunch.amplain.mvp.models;
  * Created by Lilian on 19-Feb-17.
  */
 
-public class AuthModel {
+public class AuthModel extends AbstractModel {
 
     public AuthModel() {
 

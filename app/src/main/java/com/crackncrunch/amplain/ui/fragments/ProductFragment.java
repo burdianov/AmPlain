@@ -1,9 +1,9 @@
 package com.crackncrunch.amplain.ui.fragments;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,16 +11,26 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.crackncrunch.amplain.App;
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
+import com.crackncrunch.amplain.di.DaggerService;
+import com.crackncrunch.amplain.di.components.DaggerPicassoComponent;
+import com.crackncrunch.amplain.di.components.PicassoComponent;
+import com.crackncrunch.amplain.di.modules.PicassoCacheModule;
+import com.crackncrunch.amplain.di.scopes.ProductScope;
 import com.crackncrunch.amplain.mvp.presenters.ProductPresenter;
-import com.crackncrunch.amplain.mvp.presenters.ProductPresenterFactory;
 import com.crackncrunch.amplain.mvp.views.IProductView;
 import com.crackncrunch.amplain.ui.activities.RootActivity;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
-import butterknife.BindDrawable;
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import dagger.Provides;
 
 /**
  * Created by Lilian on 20-Feb-17.
@@ -44,11 +54,10 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
     @BindView(R.id.minus_btn)
     ImageButton mMinusBtn;
 
-    // TODO: 20-Feb-17 retrieve any image from internet via url with Picasso
-    @BindDrawable(R.drawable.radio_image)
-    Drawable mProductDraw;
-
-    private ProductPresenter mPresenter;
+    @Inject
+    Picasso mPicasso;
+    @Inject
+    ProductPresenter mPresenter;
 
     public ProductFragment() {
 
@@ -65,8 +74,9 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
     private void readBundle(Bundle bundle) {
         if (bundle != null) {
             ProductDto product = bundle.getParcelable("PRODUCT");
-            // TODO: 28-Oct-16 init presenter
-            mPresenter = ProductPresenterFactory.getInstance(product);
+            Component component = createDaggerComponent(product);
+            component.inject(this);
+            // TODO: 21-Feb-17 fix recreate component
         }
     }
 
@@ -92,7 +102,7 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
     //region ==================== IProductView ===================
 
     @Override
-    public void showProductView(ProductDto product) {
+    public void showProductView(final ProductDto product) {
         mProductNameTxt.setText(product.getProductName());
         mProductDescriptionTxt.setText(product.getDescription());
         mProductCountTxt.setText(String.valueOf(product.getCount()));
@@ -102,9 +112,24 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
         } else {
             mProductPriceTxt.setText(String.valueOf(product.getPrice() + ".-"));
         }
+        mPicasso.load(product.getImageUrl())
+                .networkPolicy(NetworkPolicy.OFFLINE)
+                .fit()
+                .centerCrop()
+                .into(mProductImage, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.e(TAG, "onSuccess: load from cache");
+                    }
 
-        // TODO: 28-Oct-16 Picasso load from url
-        mProductImage.setImageDrawable(mProductDraw);
+                    @Override
+                    public void onError() {
+                        mPicasso.load(product.getImageUrl())
+                                .fit()
+                                .centerCrop()
+                                .into(mProductImage);
+                    }
+                });
     }
 
     @Override
@@ -114,26 +139,6 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
             mProductPriceTxt.setText(String.valueOf(product.getCount() * product
                     .getPrice() + ".-"));
         }
-    }
-
-    @Override
-    public void showMessage(String message) {
-        getRootActivity().showMessage(message);
-    }
-
-    @Override
-    public void showError(Throwable e) {
-        getRootActivity().showError(e);
-    }
-
-    @Override
-    public void showLoad() {
-        getRootActivity().showLoad();
-    }
-
-    @Override
-    public void hideLoad() {
-        getRootActivity().hideLoad();
     }
 
     //endregion
@@ -153,4 +158,47 @@ public class ProductFragment extends Fragment implements IProductView, View.OnCl
                 break;
         }
     }
+
+    //region ==================== DI ===================
+
+    private Component createDaggerComponent(ProductDto product) {
+        PicassoComponent picassoComponent = DaggerService.getComponent
+                (PicassoComponent.class);
+        if (picassoComponent == null) {
+            picassoComponent = DaggerPicassoComponent.builder()
+                    .appComponent(App.getAppComponent())
+                    .picassoCacheModule(new PicassoCacheModule())
+                    .build();
+            DaggerService.registerComponent(PicassoComponent.class, picassoComponent);
+        }
+        return DaggerProductFragment_Component.builder()
+                .picassoComponent(picassoComponent)
+                .module(new Module(product))
+                .build();
+    }
+
+    @dagger.Module
+    public class Module {
+
+        ProductDto mProductDto;
+
+        public Module(ProductDto productDto) {
+            mProductDto = productDto;
+        }
+
+        @Provides
+        @ProductScope
+        ProductPresenter provideProductPresenter() {
+            return new ProductPresenter(mProductDto);
+        }
+    }
+
+    @dagger.Component(dependencies = PicassoComponent.class,
+            modules = Module.class)
+    @ProductScope
+    interface Component {
+        void inject(ProductFragment fragment);
+    }
+
+    //endregion
 }
