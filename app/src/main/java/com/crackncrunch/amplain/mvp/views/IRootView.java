@@ -1,5 +1,7 @@
 package com.crackncrunch.amplain.mvp.views;
 
+import android.support.annotation.Nullable;
+
 /**
  * Created by Lilian on 21-Feb-17.
  */
@@ -9,4 +11,7 @@ public interface IRootView extends IView {
 
     void showLoad();
     void hideLoad();
+
+    @Nullable
+    IView getCurrentScreen();
 }

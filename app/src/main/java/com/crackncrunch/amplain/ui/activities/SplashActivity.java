@@ -1,44 +1,59 @@
 package com.crackncrunch.amplain.ui.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
+import android.widget.FrameLayout;
 
 import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.di.DaggerService;
-import com.crackncrunch.amplain.di.scopes.AuthScope;
-import com.crackncrunch.amplain.mvp.presenters.AuthPresenter;
-import com.crackncrunch.amplain.mvp.presenters.IAuthPresenter;
-import com.crackncrunch.amplain.mvp.views.IAuthView;
-import com.crackncrunch.amplain.ui.custom_views.AuthPanel;
+import com.crackncrunch.amplain.flow.TreeKeyDispatcher;
+import com.crackncrunch.amplain.mortar.ScreenScoper;
+import com.crackncrunch.amplain.mvp.presenters.RootPresenter;
+import com.crackncrunch.amplain.mvp.views.IRootView;
+import com.crackncrunch.amplain.mvp.views.IView;
+import com.crackncrunch.amplain.ui.screens.auth.AuthScreen;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import dagger.Provides;
+import flow.Flow;
+import mortar.MortarScope;
+import mortar.bundler.BundleServiceRunner;
 
-public class SplashActivity extends AppCompatActivity implements IAuthView, View.OnClickListener {
-
-    @Inject
-    AuthPresenter mPresenter;
+public class SplashActivity extends AppCompatActivity implements IRootView {
 
     @BindView(R.id.coordinator_container)
     CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.root_frame)
+    FrameLayout mRootFrame;
 
-    @BindView(R.id.auth_wrapper)
-    AuthPanel mAuthPanel;
+    @Inject
+    RootPresenter mRootPresenter;
 
-    @BindView(R.id.show_catalog_btn)
-    Button mShowCatalogBtn;
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        newBase = Flow.configure(newBase, this)
+                .defaultKey(new AuthScreen())
+                .dispatcher(new TreeKeyDispatcher(this))
+                .install();
+        super.attachBaseContext(newBase);
+    }
 
-    @BindView(R.id.login_btn)
-    Button mLoginBtn;
+    @Override
+    public Object getSystemService(String name) {
+        MortarScope rootActivityScope = MortarScope.findChild
+                (getApplicationContext(), RootActivity.class.getName());
+        return rootActivityScope.hasService(name)
+                ? rootActivityScope.getService(name)
+                : super.getSystemService(name);
+    }
 
     //region ==================== Life cycle ================
 
@@ -46,27 +61,37 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        BundleServiceRunner.getBundleServiceRunner(this).onCreate(savedInstanceState);
         ButterKnife.bind(this);
 
-        Component component = DaggerService.getComponent(Component.class);
-        if (component == null) {
-            component = createDaggerComponent();
-            DaggerService.registerComponent(Component.class, component);
-        }
-        component.inject(this);
+        DaggerService.<RootActivity.RootComponent>getDaggerComponent(this)
+                .inject(this);
+    }
 
-        mPresenter.takeView(this);
-        mPresenter.initView();
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        BundleServiceRunner.getBundleServiceRunner(this).onSaveInstanceState
+                (outState);
+    }
 
-        mLoginBtn.setOnClickListener(this);
-        mShowCatalogBtn.setOnClickListener(this);
+    @Override
+    protected void onResume() {
+        mRootPresenter.takeView(this);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        mRootPresenter.dropView();
+        super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        mPresenter.dropView();
         if (isFinishing()) {
-            DaggerService.unregisterScope(AuthScope.class);
+            ScreenScoper.destroyScreenScope(AuthScreen.class.getName());
         }
         super.onDestroy();
     }
@@ -101,78 +126,31 @@ public class SplashActivity extends AppCompatActivity implements IAuthView, View
         // TODO: 21-Oct-16 hide load progress
     }
 
+    @Nullable
     @Override
-    public IAuthPresenter getPresenter() {
-        return mPresenter;
-    }
-
-    @Override
-    public void showLoginBtn() {
-        mLoginBtn.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void hideLoginBtn() {
-        mLoginBtn.setVisibility(View.GONE);
-    }
-
-    @Override
-    public AuthPanel getAuthPanel() {
-        return mAuthPanel;
-    }
-
-    @Override
-    public void showCatalogScreen() {
-        Intent intent = new Intent(this, RootActivity.class);
-        startActivity(intent);
-        finish();
+    public IView getCurrentScreen() {
+        return (IView) mRootFrame.getChildAt(0);
     }
 
     //endregion
 
     @Override
     public void onBackPressed() {
-        if (!mAuthPanel.isIdle()) {
-            mAuthPanel.setCustomState(AuthPanel.IDLE_STATE);
-        } else {
+        if (getCurrentScreen() != null
+                && !getCurrentScreen().viewOnBackPressed()
+                && !Flow.get(this).goBack()) {
             super.onBackPressed();
         }
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.show_catalog_btn:
-                mPresenter.clickOnShowCatalog();
-                break;
-            case R.id.login_btn:
-                mPresenter.clickOnLogin();
-                break;
-        }
+    public boolean viewOnBackPressed() {
+        return false;
     }
 
-    //region ==================== DI ===================
-
-    @dagger.Module
-    public class Module {
-        @Provides
-        @AuthScope
-        AuthPresenter provideAuthPresenter() {
-            return new AuthPresenter();
-        }
+    public void startRootActivity() {
+        Intent intent = new Intent(this, RootActivity.class);
+        startActivity(intent);
+        finish();
     }
-
-    @dagger.Component(modules = Module.class)
-    @AuthScope
-    interface Component {
-        void inject(SplashActivity activity);
-    }
-
-    private Component createDaggerComponent() {
-        return DaggerSplashActivity_Component.builder()
-                .module(new Module())
-                .build();
-    }
-
-    //endregion
 }

@@ -1,9 +1,8 @@
 package com.crackncrunch.amplain.di.components;
 
 import com.crackncrunch.amplain.di.modules.PicassoCacheModule;
+import com.crackncrunch.amplain.di.scopes.RootScope;
 import com.squareup.picasso.Picasso;
-
-import javax.inject.Singleton;
 
 import dagger.Component;
 
@@ -13,7 +12,7 @@ import dagger.Component;
 
 @Component(dependencies = AppComponent.class,
         modules = PicassoCacheModule.class)
-@Singleton
+@RootScope
 public interface PicassoComponent {
     Picasso getPicasso();
 }

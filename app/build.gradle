@@ -56,4 +56,8 @@ dependencies {
     // Picasso
     compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+
+    // Flow and Mortar
+    compile 'com.squareup.flow:flow:1.0.0-alpha2'
+    compile 'com.squareup.mortar:mortar:0.20'
 }

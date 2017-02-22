@@ -19,6 +19,8 @@
     <string name="my_orders">My Orders</string>
     <string name="my_notifications">My Notifications</string>
     <string name="user_first_name">User First Name</string>
+    <string name="user_full_name">Hulk Hogan</string>
+    <string name="user_full_name_label">Full Name</string>
     <string name="open_drawer">open</string>
     <string name="close_drawer">close</string>
     <string name="dummy_content_description">Dummy content description</string>
@@ -28,7 +30,7 @@
     <string name="quantity">Quantity</string>
     <string name="lorem_ipsum">Donec et ex laoreet, aliquet metus in, malesuada
         ligula. Promto di carste psi. Jacara dikili nihai skarula, hanta
-        buhiskili ba</string>
+        buriskili ba</string>
     <string name="error_message">Something went wrong, try again later</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="add_to_cart">Add to Cart</string>
@@ -69,5 +71,20 @@
     <string name="facebook_button">Facebook button</string>
     <string name="twitter_button">Twitter button</string>
     <string name="vk_button">VK button</string>
+    <string name="phone_label">Phone:</string>
+    <string name="phone">+7(917)971-38-27</string>
+    <string name="add_address">Add Address</string>
+    <string name="push_notifications">Push notifications:</string>
+    <string name="order_status_notification">Notify about order status</string>
+    <string name="special_offer_notification">Notify about promotions and special offers</string>
+    <string name="delivery_address">Delivery Address:</string>
+    <string name="label_comments">Comments</string>
+    <string name="delivery_location_label">Delivery location</string>
+    <string name="delivery_location">In the middle of nowhere</string>
+    <string name="street">Street</string>
+    <string name="hint_building">Bldg.</string>
+    <string name="hint_apartment">Apt.</string>
+    <string name="hint_floor">Floor</string>
+    <string name="address_comments">Comments</string>
 
 </resources>

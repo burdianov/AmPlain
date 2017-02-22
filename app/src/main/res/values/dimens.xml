@@ -11,7 +11,9 @@
     <dimen name="font_normal_18">18sp</dimen>
     <dimen name="font_medium_20">20sp</dimen>
     <dimen name="font_medium_24">24sp</dimen>
+    <dimen name="font_medium_32">32sp</dimen>
     <dimen name="font_medium_34">34sp</dimen>
+    <dimen name="font_medium_plus_40">40sp</dimen>
     <dimen name="font_large_45">45sp</dimen>
     <dimen name="font_larger_56">56sp</dimen>
     <dimen name="font_largest_112">112sp</dimen>
@@ -39,6 +41,7 @@
     <dimen name="spacing_small_8">8dp</dimen>
     <dimen name="spacing_small_12">12dp</dimen>
     <dimen name="spacing_normal_16">16dp</dimen>
+    <dimen name="spacing_normal_20">20dp</dimen>
     <dimen name="spacing_medial_24">24dp</dimen>
     <dimen name="spacing_medial_28">28dp</dimen>
     <dimen name="spacing_medium_32">32dp</dimen>
@@ -51,6 +54,7 @@
     <dimen name="spacing_large_64">64dp</dimen>
     <dimen name="spacing_larger_72">72dp</dimen>
     <dimen name="spacing_larger_80">80dp</dimen>
+    <dimen name="spacing_larger_86">86dp</dimen>
     <dimen name="spacing_larger_96">96dp</dimen>
 
     <!-- Corner Radius -->
@@ -70,4 +74,10 @@
     <dimen name="count_button_padding">12dp</dimen>
     <dimen name="avatar_padding_top">16dp</dimen>
     <dimen name="product_image_height">180dp</dimen>
+    <dimen name="collapsing_toolbar_height">180dp</dimen>
+    <dimen name="account_avatar_margin_top">110dp</dimen>
+    <dimen name="product_description_card_height">264dp</dimen>
+    <dimen name="account_avatar_height">140dp</dimen>
+    <dimen name="account_avatar_width">140dp</dimen>
+    <dimen name="pointer_size">24dp</dimen>
 </resources>

@@ -1,5 +1,6 @@
 package com.crackncrunch.amplain.di;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -10,11 +11,19 @@ import java.util.Map;
 
 public class DaggerService {
     public static final String TAG = "DaggerService";
+    public static final String SERVICE_NAME = "DAGGER_SERVICE";
+
     private static Map<Class, Object> sComponentMap = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
+    public static <T> T getDaggerComponent(Context context) {
+        //noinspection ResourceType
+        return (T) context.getSystemService(SERVICE_NAME);
+    }
+
     public static void registerComponent(Class componentClass, Object
-            dagggerComponent) {
-        sComponentMap.put(componentClass, dagggerComponent);
+            daggerComponent) {
+        sComponentMap.put(componentClass, daggerComponent);
     }
 
     @Nullable

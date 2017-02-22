@@ -1,11 +1,14 @@
 package com.crackncrunch.amplain.data.managers;
 
 import android.content.Context;
+import android.net.Uri;
 
 import com.crackncrunch.amplain.App;
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.network.RestService;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
+import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
+import com.crackncrunch.amplain.data.storage.dto.UserDto;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.DaggerDataManagerComponent;
 import com.crackncrunch.amplain.di.components.DataManagerComponent;
@@ -13,9 +16,15 @@ import com.crackncrunch.amplain.di.modules.LocalModule;
 import com.crackncrunch.amplain.di.modules.NetworkModule;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
+
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_AVATAR_KEY;
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_FULL_NAME_KEY;
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_PHONE_KEY;
 
 /**
  * Created by Lilian on 20-Feb-17.
@@ -32,6 +41,11 @@ public class DataManager {
 
     private List<ProductDto> mMockProductList;
 
+    private UserDto mUser;
+    private Map<String, String> mUserProfileInfo;
+    private ArrayList<UserAddressDto> mUserAddresses;
+    private Map<String, Boolean> mUserSettings;
+
     public DataManager() {
         DataManagerComponent component = DaggerService.getComponent
                 (DataManagerComponent.class);
@@ -44,8 +58,54 @@ public class DataManager {
             DaggerService.registerComponent(DataManagerComponent.class, component);
         }
         component.inject(this);
+        initMockUserData();
         generateMockData();
     }
+
+    //region ==================== Users ===================
+
+    public void loginUser(String email, String password) {
+        // TODO: 23-Oct-16 implement user authentication
+    }
+
+    public boolean isAuthUser() {
+        // TODO: 20-Feb-17 Check User auth token in SharedPreferences
+        return true;
+    }
+
+    public Map<String, String> getUserProfileInfo() {
+        return mUserProfileInfo;
+    }
+
+    public void saveProfileInfo(String name, String phone, String avatar) {
+        mUserProfileInfo.put(PROFILE_FULL_NAME_KEY, name);
+        mUserProfileInfo.put(PROFILE_PHONE_KEY, phone);
+        mUserProfileInfo.put(PROFILE_AVATAR_KEY, avatar);
+    }
+
+    public ArrayList<UserAddressDto> getUserAddresses() {
+        return mUserAddresses;
+    }
+
+    public Map<String, Boolean> getUserSettings() {
+        return mUserSettings;
+    }
+
+    public void saveAvatarPhoto(Uri photoUri) {
+        // mPreferencesManager.saveAvatar(photoUri.toString());
+    }
+
+    public void saveSetting(String notificationKey, boolean isChecked) {
+        // TODO: 29-Nov-16 implement method
+    }
+
+    public void addAddress(UserAddressDto userAddressDto) {
+        // TODO: 29-Nov-16 implement method
+    }
+
+    //endregion
+
+    //region ==================== Products ===================
 
     public ProductDto getProductById(int productId) {
         // TODO: 28-Oct-16 gets product from mock (to be converted to DB)
@@ -61,8 +121,35 @@ public class DataManager {
         // TODO: 28-Oct-16 update product count or other property and save to DB
     }
 
+    //endregion
+
     private String getResVal(int resourceId) {
         return mContext.getString(resourceId);
+    }
+
+    private void initMockUserData() {
+        mUserProfileInfo = new HashMap<>();
+        mUserProfileInfo.put(PROFILE_FULL_NAME_KEY, "Donald " +
+                "Trump");
+        mUserProfileInfo.put(PROFILE_AVATAR_KEY,
+                "http://a1.files.biography.com/image/upload/c_fill,cs_srgb,dpr_1.0,g_face,h_300,q_80,w_300/MTIwNjA4NjM0MDQyNzQ2Mzgw.jpg");
+        mUserProfileInfo.put(PROFILE_PHONE_KEY, "334-29-3093");
+
+        mUserAddresses = new ArrayList<>();
+        UserAddressDto userAddress;
+        userAddress = new UserAddressDto(3, "Home", "Airport Road", "24", "56",
+                9, "Beware of crazy dogs");
+        mUserAddresses.add(userAddress);
+
+        userAddress = new UserAddressDto(5, "Work", "Central Park", "123", "67",
+                2, "In the middle of nowhere");
+        mUserAddresses.add(userAddress);
+
+        mUserSettings = new HashMap<>();
+        mUserSettings.put(PreferencesManager.NOTIFICATION_ORDER_KEY, true);
+        mUserSettings.put(PreferencesManager.NOTIFICATION_PROMO_KEY, false);
+
+        mUser = new UserDto(mUserProfileInfo, mUserAddresses, mUserSettings);
     }
 
     private void generateMockData() {
@@ -107,10 +194,5 @@ public class DataManager {
                 getResVal(R.string.product_name_10),
                 getResVal(R.string.product_url_10),
                 getResVal(R.string.lorem_ipsum), 100, 1));
-    }
-
-    public boolean isAuthUser() {
-        // TODO: 20-Feb-17 Check User auth token in SharedPreferences
-        return true;
     }
 }

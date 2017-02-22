@@ -5,5 +5,5 @@ package com.crackncrunch.amplain.mvp.views;
  */
 
 public interface IView {
-
+    boolean viewOnBackPressed();
 }

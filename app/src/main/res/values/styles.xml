@@ -128,6 +128,18 @@
         <item name="android:layout_marginRight">@dimen/spacing_medium_32</item>
     </style>
 
+    <style name="CustomButtonAccount">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/size_medium_64</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/font_small_12</item>
+        <item name="android:fontFamily">@string/roboto_regular</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginLeft">@dimen/spacing_zero</item>
+        <item name="android:layout_marginRight">@dimen/spacing_zero</item>
+    </style>
+
     <style name="StartBtn" parent="Base.Widget.AppCompat.Button">
         <item name="colorButtonNormal">@color/colorAccent</item>
         <item name="android:textColor">@android:color/white</item>
@@ -141,4 +153,56 @@
     <style name="CustomDialog">
         <item name="android:fullDark">@android:color/transparent</item>
     </style>
+
+    <style name="Icon">
+        <item name="android:layout_width">@dimen/pointer_size</item>
+        <item name="android:layout_height">@dimen/pointer_size</item>
+        <item name="android:tint">@color/colorAccent</item>
+    </style>
+
+    <style name="HorizontalDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/line_size_1</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_normal_20</item>
+        <item name="android:background">@color/grey_light</item>
+    </style>
+
+    <style name="CustomText">
+    </style>
+
+    <style name="CustomText.AccountTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:textColor">#474a4f</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_medial_24</item>
+        <item name="android:textSize">@dimen/font_small_14</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="CustomText.AccountLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/spacing_normal_16</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_tiny_4</item>
+        <item name="android:textColor">@color/color_grey_darker</item>
+        <item name="android:textSize">@dimen/font_small_12</item>
+    </style>
+
+    <style name="CustomText.AccountValue">
+        <item name="android:textSize">@dimen/size_small_16</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/account_title_color</item>
+        <item name="android:enabled">false</item>
+        <item name="android:focusable">false</item>
+    </style>
+
+    <style name="CustomSwitch" parent="Theme.AppCompat.Light">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="colorControlActivated">@color/colorAccent</item>
+        <item name="colorSwitchThumbNormal">@color/color_white</item>
+        <item name="android:colorForeground">@color/color_grey_darker</item>
+    </style>
+
 </resources>
