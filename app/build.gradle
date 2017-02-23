@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
+apply plugin: 'com.fernandocejas.frodo'
+apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
@@ -11,6 +13,10 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
     buildTypes {
         release {
@@ -60,4 +66,8 @@ dependencies {
     // Flow and Mortar
     compile 'com.squareup.flow:flow:1.0.0-alpha2'
     compile 'com.squareup.mortar:mortar:0.20'
+
+    // RxJava and RxAndroid
+    compile 'io.reactivex:rxjava:1.2.3'
+    compile 'io.reactivex:rxandroid:1.2.1'
 }

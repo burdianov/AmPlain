@@ -4,32 +4,36 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class UserAddressDto implements Parcelable {
-    private int id;
+    private String id;
     private String name;
     private String street;
-    private String house;
+    private String building;
     private String apartment;
     private int floor;
     private String comment;
     private boolean favorite;
 
-    public UserAddressDto(int id, String name, String street,
-                          String house, String apartment,
-                          int floor, String comment) {
+    public UserAddressDto() {
+
+    }
+
+    public UserAddressDto(String id, String name, String street, String building,
+                          String
+                                  apartment, int floor, String comment) {
         this.id = id;
         this.name = name;
         this.street = street;
-        this.house = house;
+        this.building = building;
         this.apartment = apartment;
         this.floor = floor;
         this.comment = comment;
     }
 
     protected UserAddressDto(Parcel in) {
-        id = in.readInt();
+        id = in.readString();
         name = in.readString();
         street = in.readString();
-        house = in.readString();
+        building = in.readString();
         apartment = in.readString();
         floor = in.readInt();
         comment = in.readString();
@@ -48,11 +52,11 @@ public class UserAddressDto implements Parcelable {
         }
     };
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -72,12 +76,12 @@ public class UserAddressDto implements Parcelable {
         this.street = street;
     }
 
-    public String getHouse() {
-        return house;
+    public String getBuilding() {
+        return building;
     }
 
-    public void setHouse(String house) {
-        this.house = house;
+    public void setBuilding(String building) {
+        this.building = building;
     }
 
     public String getApartment() {
@@ -118,14 +122,14 @@ public class UserAddressDto implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeInt(id);
-        parcel.writeString(name);
-        parcel.writeString(street);
-        parcel.writeString(house);
-        parcel.writeString(apartment);
-        parcel.writeInt(floor);
-        parcel.writeString(comment);
-        parcel.writeByte((byte) (favorite ? 1 : 0));
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(name);
+        dest.writeString(street);
+        dest.writeString(building);
+        dest.writeString(apartment);
+        dest.writeInt(floor);
+        dest.writeString(comment);
+        dest.writeByte((byte) (favorite ? 1 : 0));
     }
 }

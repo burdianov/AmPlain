@@ -2,6 +2,7 @@ package com.crackncrunch.amplain.ui.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -13,19 +14,25 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
+import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.AppComponent;
 import com.crackncrunch.amplain.di.modules.PicassoCacheModule;
 import com.crackncrunch.amplain.di.modules.RootModule;
 import com.crackncrunch.amplain.di.scopes.RootScope;
 import com.crackncrunch.amplain.flow.TreeKeyDispatcher;
+import com.crackncrunch.amplain.mvp.models.AccountModel;
 import com.crackncrunch.amplain.mvp.presenters.RootPresenter;
 import com.crackncrunch.amplain.mvp.views.IRootView;
 import com.crackncrunch.amplain.mvp.views.IView;
@@ -56,9 +63,12 @@ public class RootActivity extends AppCompatActivity implements IRootView,
     FrameLayout mRootFrame;
 
     protected ProgressDialog mProgressDialog;
+    private AlertDialog.Builder mExitDialog;
 
     @Inject
     RootPresenter mRootPresenter;
+    @Inject
+    Picasso mPicasso;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -90,10 +100,10 @@ public class RootActivity extends AppCompatActivity implements IRootView,
         rootComponent.inject(this);
 
         initToolbar();
-        initDrawer();
+        initExitDialog();
+
         mRootPresenter.takeView(this);
         mRootPresenter.initView();
-        // TODO: 21-Feb-17 init View
     }
 
     @Override
@@ -109,7 +119,8 @@ public class RootActivity extends AppCompatActivity implements IRootView,
         super.onDestroy();
     }
 
-    private void initDrawer() {
+    private void initToolbar() {
+        setSupportActionBar(mToolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,
                 mDrawer, mToolbar, R.string.open_drawer, R.string.close_drawer);
         mDrawer.setDrawerListener(toggle);
@@ -117,17 +128,37 @@ public class RootActivity extends AppCompatActivity implements IRootView,
         mNavigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void initToolbar() {
-        setSupportActionBar(mToolbar);
+    private void initExitDialog() {
+        mExitDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.close_app)
+                .setMessage(R.string.are_you_sure)
+                .setPositiveButton(R.string.yes,
+                        (dialog, which) -> finish())
+                .setNegativeButton(R.string.no,
+                        (dialog, which) -> {
+                        });
     }
 
     @Override
     public void onBackPressed() {
-        if (getCurrentScreen() != null
-                && !getCurrentScreen().viewOnBackPressed()
-                && !Flow.get(this).goBack()) {
-            super.onBackPressed();
+        if (mDrawer.isDrawerOpen(GravityCompat.START)) {
+            mDrawer.closeDrawer(GravityCompat.START);
+        } else if (getCurrentScreen() != null && !getCurrentScreen()
+                .viewOnBackPressed() && !Flow.get(this).goBack()) {
+            mExitDialog.show();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mRootPresenter.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mRootPresenter.onRequestPermissionResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -202,6 +233,20 @@ public class RootActivity extends AppCompatActivity implements IRootView,
         return (IView) mRootFrame.getChildAt(0);
     }
 
+    @Override
+    public void initDrawer(UserInfoDto userInfoDto) {
+        View header = mNavigationView.getHeaderView(0);
+        ImageView avatar = (ImageView) header.findViewById(R.id.drawer_user_avatar);
+        TextView username = (TextView) header.findViewById(R.id.drawer_user_name);
+
+        mPicasso.load(userInfoDto.getAvatar())
+                .fit()
+                .centerCrop()
+                .into(avatar);
+
+        username.setText(userInfoDto.getName());
+    }
+
     //endregion
 
     //region ==================== IView ===================
@@ -221,7 +266,9 @@ public class RootActivity extends AppCompatActivity implements IRootView,
     public interface RootComponent {
         void inject(RootActivity activity);
         void inject(SplashActivity activity);
+        void inject(RootPresenter presenter);
 
+        AccountModel getAccountModel();
         RootPresenter getRootPresenter();
         Picasso getPicasso();
     }

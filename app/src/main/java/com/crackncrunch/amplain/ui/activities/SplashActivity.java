@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 
 import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
+import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.flow.TreeKeyDispatcher;
 import com.crackncrunch.amplain.mortar.ScreenScoper;
@@ -55,7 +56,7 @@ public class SplashActivity extends AppCompatActivity implements IRootView {
                 : super.getSystemService(name);
     }
 
-    //region ==================== Life cycle ================
+    //region ==================== Lifecycle ================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +131,11 @@ public class SplashActivity extends AppCompatActivity implements IRootView {
     @Override
     public IView getCurrentScreen() {
         return (IView) mRootFrame.getChildAt(0);
+    }
+
+    @Override
+    public void initDrawer(UserInfoDto userInfoDto) {
+
     }
 
     //endregion

@@ -4,7 +4,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.crackncrunch.amplain.R;
@@ -12,38 +11,55 @@ import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class AddressesAdapter extends RecyclerView
-        .Adapter<AddressesAdapter.AddressViewHolder> {
+        .Adapter<AddressesAdapter.ViewHolder> implements SwipeListener {
 
-    private ArrayList<UserAddressDto> mUserAddresses;
+    private ArrayList<UserAddressDto> mUserAddresses = new ArrayList<>();
 
-    public AddressesAdapter(ArrayList<UserAddressDto> userAddressesDto) {
-        mUserAddresses = userAddressesDto;
+    public void addItem(UserAddressDto address) {
+        mUserAddresses.add(address);
+        notifyDataSetChanged();
+    }
+
+    public void reloadAdapter() {
+        mUserAddresses.clear();
+        notifyDataSetChanged();
     }
 
     @Override
-    public AddressViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout
-                .recycler_view_address, parent, false);
+                .item_address, parent, false);
 
-        return new AddressViewHolder(itemView);
+        return new ViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(AddressViewHolder holder, int position) {
-        UserAddressDto info = mUserAddresses.get(position);
-        holder.name.setText(info.getName());
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        UserAddressDto address = mUserAddresses.get(position);
+
+        holder.mLabelAddressTxt.setText(address.getName());
+        holder.mAddressTxt.setText(addressToString(address));
+        holder.mCommentTxt.setText(address.getComment());
+    }
+
+    private StringBuilder addressToString(UserAddressDto info) {
         StringBuilder addressBuilder = new StringBuilder();
+
+        addressBuilder.append("Str. ");
         addressBuilder.append(info.getStreet());
         addressBuilder.append(" ");
-        addressBuilder.append(info.getHouse());
+        addressBuilder.append(info.getBuilding());
         addressBuilder.append(" - ");
         addressBuilder.append(info.getApartment());
         addressBuilder.append(", ");
         addressBuilder.append(info.getFloor());
         addressBuilder.append(" floor");
-        holder.completeAddress.setText(addressBuilder);
-        holder.comment.setText(info.getComment());
+
+        return addressBuilder;
     }
 
     @Override
@@ -51,19 +67,25 @@ public class AddressesAdapter extends RecyclerView
         return mUserAddresses.size();
     }
 
-    public static class AddressViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public void onSwipe(int position) {
+        mUserAddresses.remove(position);
+//        notifyDataSetChanged();
+        notifyItemRemoved(position);
+    }
 
-        private TextView name;
-        private EditText completeAddress;
-        private EditText comment;
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public AddressViewHolder(View itemView) {
+        @BindView(R.id.label_address_txt)
+        TextView mLabelAddressTxt;
+        @BindView(R.id.address_txt)
+        TextView mAddressTxt;
+        @BindView(R.id.comment_txt)
+        TextView mCommentTxt;
+
+        public ViewHolder(View itemView) {
             super(itemView);
-            name = (TextView) itemView.findViewById(R.id.account_address_name_txt);
-            completeAddress = (EditText) itemView.findViewById(R.id
-                    .account_address_street_et);
-            comment = (EditText) itemView.findViewById(R.id.account_address_comment_et);
-
+            ButterKnife.bind(this, itemView);
         }
     }
 }

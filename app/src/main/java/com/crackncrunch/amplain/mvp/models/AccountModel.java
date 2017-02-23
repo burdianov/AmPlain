@@ -1,46 +1,91 @@
 package com.crackncrunch.amplain.mvp.models;
 
-import com.crackncrunch.amplain.data.managers.PreferencesManager;
 import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
-import com.crackncrunch.amplain.data.storage.dto.UserDto;
+import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
+import com.crackncrunch.amplain.data.storage.dto.UserSettingsDto;
 
 import java.util.ArrayList;
 import java.util.Map;
 
+import rx.Observable;
+import rx.subjects.BehaviorSubject;
+
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.NOTIFICATION_ORDER_KEY;
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.NOTIFICATION_PROMO_KEY;
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_AVATAR_KEY;
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_FULL_NAME_KEY;
+import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_PHONE_KEY;
+
 public class AccountModel extends AbstractModel {
 
-    public UserDto getUserDto() {
-        return new UserDto(getUserProfileInfo(), getUserAddresses(), getUserSettings());
+    private BehaviorSubject<UserInfoDto> mUserInfoObs = BehaviorSubject.create();
+
+    public AccountModel() {
+        mUserInfoObs.onNext(getUserProfileInfo());
     }
 
-    private Map<String, String> getUserProfileInfo() {
-        return mDataManager.getUserProfileInfo();
+    //region ==================== Addresses ===================
+
+    public Observable<UserAddressDto> getAddressObs() {
+        return Observable.from(getUserAddresses());
     }
 
     private ArrayList<UserAddressDto> getUserAddresses() {
         return mDataManager.getUserAddresses();
     }
 
-    private Map<String, Boolean> getUserSettings() {
-        return mDataManager.getUserSettings();
+    public void updateOrInsertAddress(UserAddressDto addressDto) {
+        mDataManager.updateOrInsertAddress(addressDto);
     }
 
-    public void saveProfileInfo(String name, String phone, String avatar) {
-        mDataManager.saveProfileInfo(name, phone, avatar);
+    public void removeAddress(UserAddressDto addressDto) {
+        mDataManager.removeAddress(addressDto);
     }
 
-    public void savePromoNotification(boolean isChecked) {
-        mDataManager.saveSetting(PreferencesManager.NOTIFICATION_PROMO_KEY, isChecked);
+    public UserAddressDto getAddressFromPosition(int position) {
+        return getUserAddresses().get(position);
     }
 
-    public void saveOrderNotification(boolean isChecked) {
-        mDataManager.saveSetting(PreferencesManager.NOTIFICATION_ORDER_KEY,
-                isChecked);
+    //endregion
+
+    //region ==================== Settings ===================
+
+    public Observable<UserSettingsDto> getUserSettingsObs() {
+        return Observable.just(getUserSettings());
     }
 
-    public void addAddress(UserAddressDto userAddressDto) {
-        mDataManager.addAddress(userAddressDto);
+    private UserSettingsDto getUserSettings() {
+        Map<String, Boolean> map = mDataManager.getUserSettings();
+        return new UserSettingsDto(map.get(NOTIFICATION_ORDER_KEY), map.get
+                (NOTIFICATION_PROMO_KEY));
     }
 
-    // TODO: 29-Nov-16 remove address
+    public void saveSettings(UserSettingsDto settings) {
+        mDataManager.saveSetting(NOTIFICATION_ORDER_KEY, settings.isOrderNotification());
+        mDataManager.saveSetting(NOTIFICATION_PROMO_KEY, settings.isPromoNotification());
+    }
+
+    //endregion
+
+    //region ==================== User ===================
+
+    public void saveUserProfileInfo(UserInfoDto userInfo) {
+        mDataManager.saveUserProfileInfo(userInfo.getName(), userInfo.getPhone(),
+                userInfo.getAvatar());
+        mUserInfoObs.onNext(userInfo);
+    }
+
+    public UserInfoDto getUserProfileInfo() {
+        Map<String, String> map = mDataManager.getUserProfileInfo();
+        return new UserInfoDto(
+                map.get(PROFILE_FULL_NAME_KEY),
+                map.get(PROFILE_PHONE_KEY),
+                map.get(PROFILE_AVATAR_KEY));
+    }
+
+    public Observable<UserInfoDto> getUserInfoObs() {
+        return mUserInfoObs;
+    }
+
+    //endregion
 }

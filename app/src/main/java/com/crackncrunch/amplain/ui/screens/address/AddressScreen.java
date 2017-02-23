@@ -1,6 +1,10 @@
 package com.crackncrunch.amplain.ui.screens.address;
 
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+
 import com.crackncrunch.amplain.R;
+import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.scopes.AddressScope;
 import com.crackncrunch.amplain.flow.AbstractScreen;
@@ -21,9 +25,35 @@ import mortar.ViewPresenter;
 public class AddressScreen extends AbstractScreen<AccountScreen.Component>
         implements TreeKey {
 
+    @Nullable
+    private UserAddressDto mAddressDto;
+
+    public AddressScreen(@Nullable UserAddressDto addressDto) {
+        mAddressDto = addressDto;
+        if (mAddressDto == null) {
+            mAddressDto = new UserAddressDto();
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (mAddressDto != null) {
+            return o instanceof AddressScreen && mAddressDto.equals((
+                    (AddressScreen) o).mAddressDto);
+        } else {
+            return super.equals(o);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return mAddressDto != null ? mAddressDto.hashCode() : super.hashCode();
+    }
+
     @Override
     public Object createScreenComponent(AccountScreen.Component parentComponent) {
-        return DaggerAddressScreen_Component.builder().component(parentComponent)
+        return DaggerAddressScreen_Component.builder()
+                .component(parentComponent)
                 .module(new Module())
                 .build();
     }
@@ -49,12 +79,10 @@ public class AddressScreen extends AbstractScreen<AccountScreen.Component>
     @AddressScope
     public interface Component {
         void inject(AddressPresenter presenter);
-
         void inject(AddressView view);
-
     }
-    //endregion
 
+    //endregion
 
     //region ==================== Presenter ===================
 
@@ -71,10 +99,30 @@ public class AddressScreen extends AbstractScreen<AccountScreen.Component>
         }
 
         @Override
+        protected void onLoad(Bundle savedInstanceState) {
+            super.onLoad(savedInstanceState);
+            if (mAddressDto != null && getView() != null) {
+                getView().initView(mAddressDto);
+            }
+        }
+
+        @Override
         public void clickOnAddAddress() {
-            // TODO: 29-Nov-16 save address in model
+
             if (getView() != null) {
-                mAccountModel.addAddress(getView().getUserAddress());
+                UserAddressDto userAddress = getView().getUserAddress();
+
+                mAddressDto.setId(userAddress.getId());
+                mAddressDto.setName(userAddress.getName());
+                mAddressDto.setStreet(userAddress.getStreet());
+                mAddressDto.setBuilding(userAddress.getBuilding());
+                mAddressDto.setApartment(userAddress.getApartment());
+                mAddressDto.setFloor(userAddress.getFloor());
+                mAddressDto.setComment(userAddress.getComment());
+                mAddressDto.setFavorite(userAddress.isFavorite());
+
+                mAccountModel.updateOrInsertAddress(mAddressDto);
+
                 Flow.get(getView()).goBack();
             }
         }

@@ -86,5 +86,17 @@
     <string name="hint_apartment">Apt.</string>
     <string name="hint_floor">Floor</string>
     <string name="address_comments">Comments</string>
+    <string name="location_label">Location</string>
+    <string name="random_address">At the end of the world</string>
+    <string name="no_comment">No comment</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="edit_address_question">Are you sure you want to edit this address?</string>
+    <string name="delete_address_question">Are you sure you want to delete this
+        address?</string>
+    <string name="edit_address">Edit address</string>
+    <string name="delete_address">Delete address?</string>
+    <string name="cancel">Cancel</string>
+    <string name="blank">Blank</string>
 
 </resources>

@@ -25,7 +25,7 @@ public class App extends Application {
 
     private MortarScope mRootScope;
     private MortarScope mRootActivityScope;
-    private RootActivity.RootComponent mRootActivityRootComponent;
+    private static RootActivity.RootComponent mRootActivityRootComponent;
 
     @Override
     public Object getSystemService(String name) {
@@ -70,5 +70,9 @@ public class App extends Application {
                .rootModule(new RootModule())
                .picassoCacheModule(new PicassoCacheModule())
                .build();
+    }
+
+    public static RootActivity.RootComponent getmRootActivityRootComponent() {
+        return mRootActivityRootComponent;
     }
 }

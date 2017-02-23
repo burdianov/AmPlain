@@ -1,14 +1,12 @@
 package com.crackncrunch.amplain.data.managers;
 
 import android.content.Context;
-import android.net.Uri;
 
 import com.crackncrunch.amplain.App;
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.network.RestService;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
 import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
-import com.crackncrunch.amplain.data.storage.dto.UserDto;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.DaggerDataManagerComponent;
 import com.crackncrunch.amplain.di.components.DataManagerComponent;
@@ -40,8 +38,6 @@ public class DataManager {
     Context mContext;
 
     private List<ProductDto> mMockProductList;
-
-    private UserDto mUser;
     private Map<String, String> mUserProfileInfo;
     private ArrayList<UserAddressDto> mUserAddresses;
     private Map<String, Boolean> mUserSettings;
@@ -58,9 +54,44 @@ public class DataManager {
             DaggerService.registerComponent(DataManagerComponent.class, component);
         }
         component.inject(this);
-        initMockUserData();
-        generateMockData();
+
+        generateProductsMockData();
+        initUserProfileData();
+        initUserSettingsData();
+        initAddressData();
     }
+
+    //region ==================== User Profile ===================
+
+    private void initUserProfileData() {
+        mUserProfileInfo = new HashMap<>();
+
+        mUserProfileInfo = mPreferencesManager.getUserProfileInfo();
+        if (mUserProfileInfo.get(PROFILE_FULL_NAME_KEY).equals("")) {
+            mUserProfileInfo.put(PROFILE_FULL_NAME_KEY, "Hulk Hogan");
+        }
+        if (mUserProfileInfo.get(PROFILE_AVATAR_KEY).equals("")) {
+            mUserProfileInfo.put(PROFILE_AVATAR_KEY,
+                    "http://a1.files.biography.com/image/upload/c_fill,cs_srgb," +
+                            "dpr_1.0,g_face,h_300,q_80,w_300/MTIwNjA4NjM0MDQyNzQ2Mzgw.jpg");
+        }
+        if (mUserProfileInfo.get(PROFILE_PHONE_KEY).equals("")) {
+            mUserProfileInfo.put(PROFILE_PHONE_KEY, "+7(917)971-38-27");
+        }
+    }
+
+    public Map<String, String> getUserProfileInfo() {
+        return mUserProfileInfo;
+    }
+
+    public void saveUserProfileInfo(String name, String phone, String avatar) {
+        mUserProfileInfo.put(PROFILE_FULL_NAME_KEY, name);
+        mUserProfileInfo.put(PROFILE_PHONE_KEY, phone);
+        mUserProfileInfo.put(PROFILE_AVATAR_KEY, avatar);
+        mPreferencesManager.saveProfileInfo(mUserProfileInfo);
+    }
+
+    //endregion
 
     //region ==================== Users ===================
 
@@ -73,34 +104,39 @@ public class DataManager {
         return true;
     }
 
-    public Map<String, String> getUserProfileInfo() {
-        return mUserProfileInfo;
-    }
-
-    public void saveProfileInfo(String name, String phone, String avatar) {
-        mUserProfileInfo.put(PROFILE_FULL_NAME_KEY, name);
-        mUserProfileInfo.put(PROFILE_PHONE_KEY, phone);
-        mUserProfileInfo.put(PROFILE_AVATAR_KEY, avatar);
-    }
-
-    public ArrayList<UserAddressDto> getUserAddresses() {
-        return mUserAddresses;
+    private void initUserSettingsData() {
+        mUserSettings = mPreferencesManager.getUserSettings();
     }
 
     public Map<String, Boolean> getUserSettings() {
         return mUserSettings;
     }
 
-    public void saveAvatarPhoto(Uri photoUri) {
-        // mPreferencesManager.saveAvatar(photoUri.toString());
-    }
-
     public void saveSetting(String notificationKey, boolean isChecked) {
-        // TODO: 29-Nov-16 implement method
+        mPreferencesManager.saveSetting(notificationKey, isChecked);
+        mUserSettings.put(notificationKey, isChecked);
     }
 
-    public void addAddress(UserAddressDto userAddressDto) {
-        // TODO: 29-Nov-16 implement method
+    //endregion
+
+    //region ==================== Addresses ===================
+
+    public ArrayList<UserAddressDto> getUserAddresses() {
+        return mUserAddresses;
+    }
+
+    public void updateOrInsertAddress(UserAddressDto addressDto) {
+        if (mUserAddresses.contains(addressDto)) {
+            mUserAddresses.set(mUserAddresses.indexOf(addressDto), addressDto);
+        } else {
+            mUserAddresses.add(0, addressDto);
+        }
+    }
+
+    public void removeAddress(UserAddressDto addressDto) {
+        if (mUserAddresses.contains(addressDto)) {
+            mUserAddresses.remove(mUserAddresses.indexOf(addressDto));
+        }
     }
 
     //endregion
@@ -109,7 +145,7 @@ public class DataManager {
 
     public ProductDto getProductById(int productId) {
         // TODO: 28-Oct-16 gets product from mock (to be converted to DB)
-        return mMockProductList.get(productId + 1);
+        return mMockProductList.get(productId - 1);
     }
 
     public List<ProductDto> getProductList() {
@@ -127,32 +163,21 @@ public class DataManager {
         return mContext.getString(resourceId);
     }
 
-    private void initMockUserData() {
-        mUserProfileInfo = new HashMap<>();
-        mUserProfileInfo.put(PROFILE_FULL_NAME_KEY, "Donald " +
-                "Trump");
-        mUserProfileInfo.put(PROFILE_AVATAR_KEY,
-                "http://a1.files.biography.com/image/upload/c_fill,cs_srgb,dpr_1.0,g_face,h_300,q_80,w_300/MTIwNjA4NjM0MDQyNzQ2Mzgw.jpg");
-        mUserProfileInfo.put(PROFILE_PHONE_KEY, "334-29-3093");
+    //region ==================== Data Initialization ===================
 
+    private void initAddressData() {
         mUserAddresses = new ArrayList<>();
         UserAddressDto userAddress;
-        userAddress = new UserAddressDto(3, "Home", "Airport Road", "24", "56",
-                9, "Beware of crazy dogs");
+        userAddress = new UserAddressDto("1", "Home", "Airport Road",
+                "24", "56", 9, "Beware of crazy dogs");
         mUserAddresses.add(userAddress);
 
-        userAddress = new UserAddressDto(5, "Work", "Central Park", "123", "67",
-                2, "In the middle of nowhere");
+        userAddress = new UserAddressDto("2", "Work", "Central Park",
+                "123", "67", 2, "In the middle of nowhere");
         mUserAddresses.add(userAddress);
-
-        mUserSettings = new HashMap<>();
-        mUserSettings.put(PreferencesManager.NOTIFICATION_ORDER_KEY, true);
-        mUserSettings.put(PreferencesManager.NOTIFICATION_PROMO_KEY, false);
-
-        mUser = new UserDto(mUserProfileInfo, mUserAddresses, mUserSettings);
     }
 
-    private void generateMockData() {
+    private void generateProductsMockData() {
         mMockProductList = new ArrayList<>();
         mMockProductList.add(new ProductDto(1,
                 getResVal(R.string.product_name_1),
@@ -195,4 +220,7 @@ public class DataManager {
                 getResVal(R.string.product_url_10),
                 getResVal(R.string.lorem_ipsum), 100, 1));
     }
+
+    //endregion
+
 }
