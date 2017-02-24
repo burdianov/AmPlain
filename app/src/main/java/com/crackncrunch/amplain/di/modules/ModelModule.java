@@ -1,4 +1,4 @@
-package com.crackncrunch.amplain.mvp.models;
+package com.crackncrunch.amplain.di.modules;
 
 import com.crackncrunch.amplain.data.managers.DataManager;
 
@@ -17,6 +17,6 @@ public class ModelModule {
     @Provides
     @Singleton
     DataManager provideDataManager() {
-        return new DataManager();
+        return DataManager.getInstance();
     }
 }

@@ -4,6 +4,7 @@ import com.crackncrunch.amplain.data.managers.DataManager;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.DaggerModelComponent;
 import com.crackncrunch.amplain.di.components.ModelComponent;
+import com.crackncrunch.amplain.di.modules.ModelModule;
 
 import javax.inject.Inject;
 

@@ -4,7 +4,7 @@ import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
 import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
 import com.crackncrunch.amplain.data.storage.dto.UserSettingsDto;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import rx.Observable;
@@ -30,7 +30,7 @@ public class AccountModel extends AbstractModel {
         return Observable.from(getUserAddresses());
     }
 
-    private ArrayList<UserAddressDto> getUserAddresses() {
+    private List<UserAddressDto> getUserAddresses() {
         return mDataManager.getUserAddresses();
     }
 

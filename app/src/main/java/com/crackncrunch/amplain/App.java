@@ -1,6 +1,7 @@
 package com.crackncrunch.amplain;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.AppComponent;
@@ -22,6 +23,7 @@ import mortar.bundler.BundleServiceRunner;
 public class App extends Application {
 
     private static AppComponent sAppComponent;
+    private static Context sContext;
 
     private MortarScope mRootScope;
     private MortarScope mRootActivityScope;
@@ -40,6 +42,8 @@ public class App extends Application {
 
         createAppComponent();
         createRootActivityComponent();
+
+        sContext = getApplicationContext();
 
         mRootScope = MortarScope.buildRootScope()
                 .withService(DaggerService.SERVICE_NAME, sAppComponent)
@@ -74,5 +78,9 @@ public class App extends Application {
 
     public static RootActivity.RootComponent getmRootActivityRootComponent() {
         return mRootActivityRootComponent;
+    }
+
+    public static Context getContext() {
+        return sContext;
     }
 }

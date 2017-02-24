@@ -19,12 +19,18 @@ import com.crackncrunch.amplain.ui.screens.auth.AuthScreen;
 import com.crackncrunch.amplain.ui.screens.product.ProductScreen;
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import dagger.Provides;
 import flow.Flow;
 import mortar.MortarScope;
 import mortar.ViewPresenter;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 @Screen(R.layout.screen_catalog)
 public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
@@ -59,9 +65,11 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
     @CatalogScope
     public interface Component {
         void inject(CatalogPresenter presenter);
+
         void inject(CatalogView view);
 
         CatalogModel getCatalogModel();
+
         Picasso getPicasso();
     }
 
@@ -77,6 +85,8 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
         @Inject
         CatalogModel mCatalogModel;
 
+        private Subscription mProductSub;
+
         @Override
         protected void onEnterScope(MortarScope scope) {
             super.onEnterScope(scope);
@@ -86,10 +96,13 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
         @Override
         protected void onLoad(Bundle savedInstanceState) {
             super.onLoad(savedInstanceState);
+            subscribeOnProductStoObs();
+        }
 
-            if (getView() != null) {
-                getView().showCatalogView(mCatalogModel.getProductList());
-            }
+        @Override
+        protected void onSave(Bundle outState) {
+            mProductSub.unsubscribe();
+            super.onSave(outState);
         }
 
         @Override
@@ -102,6 +115,33 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
                 } else {
                     Flow.get(getView()).set(new AuthScreen());
                 }
+            }
+        }
+
+        private void subscribeOnProductStoObs() {
+            if (getRootView() != null & getView() != null) {
+                getRootView().showLoad();
+                mProductSub = mCatalogModel.getProductObs()
+                        .toList()
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Subscriber<List<ProductDto>>() {
+                            @Override
+                            public void onCompleted() {
+                                getRootView().hideLoad();
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                getRootView().hideLoad();
+                                getRootView().showError(e);
+                            }
+
+                            @Override
+                            public void onNext(List<ProductDto> productDtoList) {
+                                getView().showCatalogView(productDtoList);
+                            }
+                        });
             }
         }
 

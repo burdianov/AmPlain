@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
+import com.crackncrunch.amplain.data.storage.dto.ProductLocalInfo;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.scopes.ProductScope;
 import com.crackncrunch.amplain.flow.AbstractScreen;
@@ -75,10 +76,10 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
     public class ProductPresenter extends ViewPresenter<ProductView>
             implements IProductPresenter {
 
-        private ProductDto mProduct;
-
         @Inject
         CatalogModel mCatalogModel;
+
+        private ProductDto mProduct;
 
         public ProductPresenter(ProductDto productDto) {
             mProduct = productDto;
@@ -95,28 +96,47 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
         protected void onLoad(Bundle savedInstanceState) {
             super.onLoad(savedInstanceState);
             if (getView() != null) {
-                getView().showProductView(mProduct);
+                getView().showProductView(mCatalogModel.getProductById(mProduct
+                        .getId()));
             }
         }
 
         @Override
         public void clickOnPlus() {
-            mProduct.addProduct();
-            mCatalogModel.updateProduct(mProduct);
             if (getView() != null) {
-                getView().updateProductCountView(mProduct);
+                ProductLocalInfo pli = getView().getProductLocalInfo();
+                pli.setRemoteId(mProduct.getId());
+                pli.addCount();
+                mCatalogModel.updateProductLocalInfo(pli);
+                getView().updateProductCountView(mCatalogModel.getProductById
+                        (mProduct.getId()));
             }
         }
 
         @Override
         public void clickOnMinus() {
-            if (mProduct.getCount() > 0) {
-                mProduct.deleteProduct();
-                mCatalogModel.updateProduct(mProduct);
-                if (getView() != null) {
-                    getView().updateProductCountView(mProduct);
+            if (getView() != null) {
+                ProductLocalInfo pli = getView().getProductLocalInfo();
+                if (pli.getCount() > 0) {
+                    pli.deleteCount();
+                    pli.setRemoteId(mProduct.getId());
+                    mCatalogModel.updateProductLocalInfo(pli);
+                    getView().updateProductCountView(mCatalogModel.getProductById
+                            (mProduct.getId()));
                 }
             }
+        }
+
+        public void clickFavorite() {
+            if (getView() != null) {
+                ProductLocalInfo pli = getView().getProductLocalInfo();
+                pli.setRemoteId(mProduct.getId());
+                mCatalogModel.updateProductLocalInfo(pli);
+            }
+        }
+
+        public void clickShowMore() {
+            // TODO: 25-Feb-17 implement me
         }
     }
 

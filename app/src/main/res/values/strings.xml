@@ -98,5 +98,6 @@
     <string name="delete_address">Delete address?</string>
     <string name="cancel">Cancel</string>
     <string name="blank">Blank</string>
+    <string name="show_more">Show more</string>
 
 </resources>

@@ -1,11 +1,17 @@
 package com.crackncrunch.amplain.data.managers;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.crackncrunch.amplain.App;
 import com.crackncrunch.amplain.R;
+import com.crackncrunch.amplain.data.network.RestCallTransformer;
 import com.crackncrunch.amplain.data.network.RestService;
+import com.crackncrunch.amplain.data.network.res.ProductRes;
+import com.crackncrunch.amplain.data.storage.dto.CommentDto;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
+import com.crackncrunch.amplain.data.storage.dto.ProductLocalInfo;
 import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.DaggerDataManagerComponent;
@@ -20,6 +26,10 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import retrofit2.Retrofit;
+import rx.Observable;
+import rx.schedulers.Schedulers;
+
 import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_AVATAR_KEY;
 import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_FULL_NAME_KEY;
 import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_PHONE_KEY;
@@ -30,19 +40,24 @@ import static com.crackncrunch.amplain.data.managers.PreferencesManager.PROFILE_
 
 public class DataManager {
 
+    private static DataManager sInstance = new DataManager();
+    public static final String TAG = "DataManager";
+
     @Inject
     PreferencesManager mPreferencesManager;
     @Inject
     RestService mRestService;
     @Inject
     Context mContext;
+    @Inject
+    Retrofit mRetrofit;
 
     private List<ProductDto> mMockProductList;
     private Map<String, String> mUserProfileInfo;
-    private ArrayList<UserAddressDto> mUserAddresses;
+    private List<UserAddressDto> mUserAddresses;
     private Map<String, Boolean> mUserSettings;
 
-    public DataManager() {
+    private DataManager() {
         DataManagerComponent component = DaggerService.getComponent
                 (DataManagerComponent.class);
         if (component == null) {
@@ -55,11 +70,38 @@ public class DataManager {
         }
         component.inject(this);
 
+        mMockProductList = new ArrayList<>();
+
         generateProductsMockData();
         initUserProfileData();
         initUserSettingsData();
         initAddressData();
     }
+
+    public static DataManager getInstance() {
+        return sInstance;
+    }
+
+    public PreferencesManager getPreferencesManager() {
+        return mPreferencesManager;
+    }
+
+    public Retrofit getRetrofit() {
+        return mRetrofit;
+    }
+
+    //region ==================== User Authentication ===================
+
+    public void loginUser(String email, String password) {
+        // TODO: 23-Oct-16 implement user authentication
+    }
+
+    public boolean isAuthUser() {
+        // TODO: 20-Feb-17 Check User auth token in SharedPreferences
+        return true;
+    }
+
+    //endregion
 
     //region ==================== User Profile ===================
 
@@ -93,16 +135,49 @@ public class DataManager {
 
     //endregion
 
-    //region ==================== Users ===================
+    //region ==================== Addresses ===================
 
-    public void loginUser(String email, String password) {
-        // TODO: 23-Oct-16 implement user authentication
+    private void initAddressData() {
+        List<UserAddressDto> userAddresses = getPreferencesManager().getUserAddresses();
+        mUserAddresses = new ArrayList<>();
+
+        if (userAddresses == null) {
+            UserAddressDto userAddress;
+            userAddress = new UserAddressDto("1", "Home", "Airport Road",
+                    "24", "56", 9, "Beware of crazy dogs");
+            mUserAddresses.add(userAddress);
+
+            userAddress = new UserAddressDto("2", "Work", "Central Park",
+                    "123", "67", 2, "In the middle of nowhere");
+            mUserAddresses.add(userAddress);
+        } else {
+            mUserAddresses = userAddresses;
+        }
     }
 
-    public boolean isAuthUser() {
-        // TODO: 20-Feb-17 Check User auth token in SharedPreferences
-        return true;
+    public List<UserAddressDto> getUserAddresses() {
+        return mUserAddresses;
     }
+
+    public void updateOrInsertAddress(UserAddressDto addressDto) {
+        if (mUserAddresses.contains(addressDto)) {
+            mUserAddresses.set(mUserAddresses.indexOf(addressDto), addressDto);
+        } else {
+            mUserAddresses.add(0, addressDto);
+        }
+        mPreferencesManager.saveUserAddresses(mUserAddresses);
+    }
+
+    public void removeAddress(UserAddressDto addressDto) {
+        if (mUserAddresses.contains(addressDto)) {
+            mUserAddresses.remove(mUserAddresses.indexOf(addressDto));
+            mPreferencesManager.saveUserAddresses(mUserAddresses);
+        }
+    }
+
+    //endregion
+
+    //region ==================== User Settings ===================
 
     private void initUserSettingsData() {
         mUserSettings = mPreferencesManager.getUserSettings();
@@ -119,38 +194,117 @@ public class DataManager {
 
     //endregion
 
-    //region ==================== Addresses ===================
-
-    public ArrayList<UserAddressDto> getUserAddresses() {
-        return mUserAddresses;
-    }
-
-    public void updateOrInsertAddress(UserAddressDto addressDto) {
-        if (mUserAddresses.contains(addressDto)) {
-            mUserAddresses.set(mUserAddresses.indexOf(addressDto), addressDto);
-        } else {
-            mUserAddresses.add(0, addressDto);
-        }
-    }
-
-    public void removeAddress(UserAddressDto addressDto) {
-        if (mUserAddresses.contains(addressDto)) {
-            mUserAddresses.remove(mUserAddresses.indexOf(addressDto));
-        }
-    }
-
-    //endregion
-
     //region ==================== Products ===================
+
+    private List<ProductDto> generateProductsMockData() {
+        List<ProductDto> productDtoList = getPreferencesManager().getProductList();
+        List<CommentDto> commentList = new ArrayList<>();
+        commentList.add(new CommentDto());
+
+        if (productDtoList == null) {
+            productDtoList = new ArrayList<>();
+
+            productDtoList.add(new ProductDto(1,
+                    getResVal(R.string.product_name_1),
+                    getResVal(R.string.product_url_1),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(2,
+                    getResVal(R.string.product_name_2),
+                    getResVal(R.string.product_url_2),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(3,
+                    getResVal(R.string.product_name_3),
+                    getResVal(R.string.product_url_3),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(4,
+                    getResVal(R.string.product_name_4),
+                    getResVal(R.string.product_url_4),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(5,
+                    getResVal(R.string.product_name_5),
+                    getResVal(R.string.product_url_5),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(6,
+                    getResVal(R.string.product_name_6),
+                    getResVal(R.string.product_url_6),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(7,
+                    getResVal(R.string.product_name_7),
+                    getResVal(R.string.product_url_7),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(8,
+                    getResVal(R.string.product_name_8),
+                    getResVal(R.string.product_url_8),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(9,
+                    getResVal(R.string.product_name_9),
+                    getResVal(R.string.product_url_9),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+            productDtoList.add(new ProductDto(10,
+                    getResVal(R.string.product_name_10),
+                    getResVal(R.string.product_url_10),
+                    getResVal(R.string.lorem_ipsum), 100, 1, false, commentList));
+        }
+        return productDtoList;
+    }
+
+    public Observable getProductsObsFromNetwork() {
+        return mRestService.getProductResObs(mPreferencesManager.getLastProductUpdate())
+                .compose(new RestCallTransformer<List<ProductRes>>())
+                .doOnNext(productRes -> {
+                    Log.e(TAG, "getProductsObsFromNetwork: " + Thread
+                            .currentThread().getName());
+                })
+                .flatMap(Observable::from)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.io())
+                .doOnNext(productRes -> {
+                    if (!productRes.isActive()) {
+                        deleteFromDb(productRes);
+                    }
+                })
+                .distinct(ProductRes::getRemoteId)
+                .filter(ProductRes::isActive)
+                .doOnNext(productRes -> {
+                    saveOnDisk(productRes);
+                })
+                .doOnCompleted(() -> {
+//                    generateProductsMockData();
+                });
+    }
+
+    private void deleteFromDb(ProductRes productRes) {
+        mPreferencesManager.deleteProduct(productRes);
+    }
+
+    @Nullable
+    public List<ProductDto> fromDisk() {
+        List<ProductDto> productDtoList = mPreferencesManager.getProductList();
+
+        if (productDtoList == null) {
+            productDtoList = generateProductsMockData();
+            mPreferencesManager.generateProductsMockData(productDtoList);
+        }
+        return productDtoList;
+    }
+
+    private void saveOnDisk(ProductRes productRes) {
+        mPreferencesManager.updateOrInsertProduct(productRes);
+    }
+
+    public Observable<ProductLocalInfo> getProductLocalInfoObs(ProductRes productRes) {
+        return Observable.just(getPreferencesManager().getLocalInfo(productRes
+                .getRemoteId()))
+                .flatMap(productLocalInfo ->
+                        productLocalInfo == null ?
+                                Observable.just(new ProductLocalInfo()) :
+                                Observable.just(productLocalInfo)
+                );
+    }
 
     public ProductDto getProductById(int productId) {
         // TODO: 28-Oct-16 gets product from mock (to be converted to DB)
         return mMockProductList.get(productId - 1);
-    }
-
-    public List<ProductDto> getProductList() {
-        // TODO: 28-Oct-16 get product list
-        return mMockProductList;
     }
 
     public void updateProduct(ProductDto product) {
@@ -162,65 +316,4 @@ public class DataManager {
     private String getResVal(int resourceId) {
         return mContext.getString(resourceId);
     }
-
-    //region ==================== Data Initialization ===================
-
-    private void initAddressData() {
-        mUserAddresses = new ArrayList<>();
-        UserAddressDto userAddress;
-        userAddress = new UserAddressDto("1", "Home", "Airport Road",
-                "24", "56", 9, "Beware of crazy dogs");
-        mUserAddresses.add(userAddress);
-
-        userAddress = new UserAddressDto("2", "Work", "Central Park",
-                "123", "67", 2, "In the middle of nowhere");
-        mUserAddresses.add(userAddress);
-    }
-
-    private void generateProductsMockData() {
-        mMockProductList = new ArrayList<>();
-        mMockProductList.add(new ProductDto(1,
-                getResVal(R.string.product_name_1),
-                getResVal(R.string.product_url_1),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(2,
-                getResVal(R.string.product_name_2),
-                getResVal(R.string.product_url_2),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(3,
-                getResVal(R.string.product_name_3),
-                getResVal(R.string.product_url_3),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(4,
-                getResVal(R.string.product_name_4),
-                getResVal(R.string.product_url_4),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(5,
-                getResVal(R.string.product_name_5),
-                getResVal(R.string.product_url_5),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(6,
-                getResVal(R.string.product_name_6),
-                getResVal(R.string.product_url_6),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(7,
-                getResVal(R.string.product_name_7),
-                getResVal(R.string.product_url_7),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(8,
-                getResVal(R.string.product_name_8),
-                getResVal(R.string.product_url_8),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(9,
-                getResVal(R.string.product_name_9),
-                getResVal(R.string.product_url_9),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-        mMockProductList.add(new ProductDto(10,
-                getResVal(R.string.product_name_10),
-                getResVal(R.string.product_url_10),
-                getResVal(R.string.lorem_ipsum), 100, 1));
-    }
-
-    //endregion
-
 }

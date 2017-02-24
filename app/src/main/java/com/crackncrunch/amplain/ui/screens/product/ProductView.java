@@ -2,13 +2,14 @@ package com.crackncrunch.amplain.ui.screens.product;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.ImageButton;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
+import com.crackncrunch.amplain.data.storage.dto.ProductLocalInfo;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.mvp.views.IProductView;
 import com.squareup.picasso.Callback;
@@ -35,10 +36,8 @@ public class ProductView extends LinearLayout implements IProductView {
     TextView mProductCountTxt;
     @BindView(R.id.product_price_txt)
     TextView mProductPriceTxt;
-    @BindView(R.id.plus_btn)
-    ImageButton mPlusBtn;
-    @BindView(R.id.minus_btn)
-    ImageButton mMinusBtn;
+    @BindView(R.id.favorite_btn)
+    CheckBox mFavoriteBtn;
 
     @Inject
     Picasso mPicasso;
@@ -114,6 +113,11 @@ public class ProductView extends LinearLayout implements IProductView {
                 });
     }
 
+    public ProductLocalInfo getProductLocalInfo() {
+        return new ProductLocalInfo(0, mFavoriteBtn.isChecked(),
+                Integer.parseInt(mProductCountTxt.getText().toString()));
+    }
+
     @Override
     public void updateProductCountView(ProductDto product) {
         mProductCountTxt.setText(String.valueOf(product.getCount()));
@@ -140,6 +144,16 @@ public class ProductView extends LinearLayout implements IProductView {
     @OnClick(R.id.minus_btn)
     void clickMinus() {
         mPresenter.clickOnMinus();
+    }
+
+    @OnClick(R.id.favorite_btn)
+    void clickOnFavorite() {
+        mPresenter.clickFavorite();
+    }
+
+    @OnClick(R.id.show_more_btn)
+    void clickOnShowMore() {
+        mPresenter.clickShowMore();
     }
 
     //endregion

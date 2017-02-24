@@ -1,7 +1,7 @@
 package com.crackncrunch.amplain.di.components;
 
+import com.crackncrunch.amplain.di.modules.ModelModule;
 import com.crackncrunch.amplain.mvp.models.AbstractModel;
-import com.crackncrunch.amplain.mvp.models.ModelModule;
 
 import javax.inject.Singleton;
 

@@ -7,41 +7,29 @@ import android.widget.ImageView;
 
 import com.crackncrunch.amplain.R;
 
-import static android.view.View.MeasureSpec.EXACTLY;
+public class AspectRatioImageView extends ImageView {
 
-public final class AspectRatioImageView extends ImageView {
-    private final int widthRatio;
-    private final int heightRatio;
+    private static final float DEFAULT_ASPECT_RATIO = 1.73f;
+    private final float mAspectRatio;
 
     public AspectRatioImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.AspectRatioImageView);
-        widthRatio = a.getInteger(R.styleable.AspectRatioImageView_widthRatio, 1);
-        heightRatio = a.getInteger(R.styleable.AspectRatioImageView_heightRatio, 1);
+        mAspectRatio = a.getFloat(R.styleable
+                .AspectRatioImageView_aspectRatio, DEFAULT_ASPECT_RATIO);
         a.recycle();
     }
 
-    @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        if (widthMode == EXACTLY) {
-            if (heightMode != EXACTLY) {
-                heightSize = (int) (widthSize * 1f / widthRatio * heightRatio);
-            }
-        } else if (heightMode == EXACTLY) {
-            widthSize = (int) (heightSize * 1f / heightRatio * widthRatio);
-        } else {
-            throw new IllegalStateException("Either width or height must be EXACTLY.");
-        }
-
-        widthMeasureSpec = MeasureSpec.makeMeasureSpec(widthSize, EXACTLY);
-        heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightSize, EXACTLY);
-
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int newWidth;
+        int newHeight;
+
+        newWidth = getMeasuredWidth();
+        newHeight = (int) (newWidth / mAspectRatio);
+
+        setMeasuredDimension(newWidth, newHeight);
     }
 }
-

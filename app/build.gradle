@@ -70,4 +70,7 @@ dependencies {
     // RxJava and RxAndroid
     compile 'io.reactivex:rxjava:1.2.3'
     compile 'io.reactivex:rxandroid:1.2.1'
+
+    // Gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.4'
 }

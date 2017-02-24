@@ -3,6 +3,10 @@ package com.crackncrunch.amplain.data.storage.dto;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.crackncrunch.amplain.data.network.res.ProductRes;
+
+import java.util.List;
+
 public class ProductDto implements Parcelable {
     private int id;
     private String productName;
@@ -10,15 +14,20 @@ public class ProductDto implements Parcelable {
     private String description;
     private int price;
     private int count;
+    private boolean favorite;
+    private List<CommentDto> comments = null;
 
     public ProductDto(int id, String productName, String imageUrl,
-                      String description, int price, int count) {
+                      String description, int price, int count, boolean favorite,
+                      List<CommentDto> comments) {
         this.id = id;
         this.productName = productName;
         this.imageUrl = imageUrl;
         this.description = description;
         this.price = price;
         this.count = count;
+        this.favorite = favorite;
+        this.comments = comments;
     }
 
     //region ==================== Parcelable ===================
@@ -30,6 +39,7 @@ public class ProductDto implements Parcelable {
         description = in.readString();
         price = in.readInt();
         count = in.readInt();
+        favorite = in.readByte() != 0;
     }
 
     public static final Creator<ProductDto> CREATOR = new Creator<ProductDto>() {
@@ -44,6 +54,16 @@ public class ProductDto implements Parcelable {
         }
     };
 
+    public ProductDto(ProductRes productRes, ProductLocalInfo productLocalInfo) {
+        id = productRes.getRemoteId();
+        productName = productRes.getProductName();
+        imageUrl = productRes.getImageUrl();
+        description = productRes.getDescription();
+        price = productRes.getPrice();
+        count = productLocalInfo.getCount();
+        favorite = productLocalInfo.isFavorite();
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -57,9 +77,46 @@ public class ProductDto implements Parcelable {
         parcel.writeString(description);
         parcel.writeInt(price);
         parcel.writeInt(count);
+        parcel.writeInt(favorite ? 1 : 0);
+    }
+    //endregion
+
+    //region ==================== Setters ===================
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
+    public void setComments(List<CommentDto> comments) {
+        this.comments = comments;
     }
 
     //endregion
+
 
     //region ==================== Getters ===================
 
@@ -87,6 +144,12 @@ public class ProductDto implements Parcelable {
         return count;
     }
 
+    public boolean getFavorite() {
+        return favorite;
+    }
+
+    //endregion
+
     public void deleteProduct() {
         count--;
     }
@@ -95,5 +158,9 @@ public class ProductDto implements Parcelable {
         count++;
     }
 
-    //endregion
+    public List<CommentDto> getComments() {
+        return this.comments;
+    }
+
+
 }
