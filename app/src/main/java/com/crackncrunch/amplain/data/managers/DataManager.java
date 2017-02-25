@@ -1,8 +1,6 @@
 package com.crackncrunch.amplain.data.managers;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.crackncrunch.amplain.App;
 import com.crackncrunch.amplain.R;
@@ -11,8 +9,8 @@ import com.crackncrunch.amplain.data.network.RestService;
 import com.crackncrunch.amplain.data.network.res.ProductRes;
 import com.crackncrunch.amplain.data.storage.dto.CommentDto;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
-import com.crackncrunch.amplain.data.storage.dto.ProductLocalInfo;
 import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
+import com.crackncrunch.amplain.data.storage.realm.ProductRealm;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.DaggerDataManagerComponent;
 import com.crackncrunch.amplain.di.components.DataManagerComponent;
@@ -51,6 +49,8 @@ public class DataManager {
     Context mContext;
     @Inject
     Retrofit mRetrofit;
+    @Inject
+    RealmManager mRealmManager;
 
     private List<ProductDto> mMockProductList;
     private Map<String, String> mUserProfileInfo;
@@ -199,7 +199,6 @@ public class DataManager {
     private List<ProductDto> generateProductsMockData() {
         List<ProductDto> productDtoList = getPreferencesManager().getProductList();
         List<CommentDto> commentList = new ArrayList<>();
-        commentList.add(new CommentDto());
 
         if (productDtoList == null) {
             productDtoList = new ArrayList<>();
@@ -248,72 +247,31 @@ public class DataManager {
         return productDtoList;
     }
 
-    public Observable getProductsObsFromNetwork() {
+    public Observable<ProductRealm> getProductsObsFromNetwork() {
         return mRestService.getProductResObs(mPreferencesManager.getLastProductUpdate())
-                .compose(new RestCallTransformer<List<ProductRes>>())
-                .doOnNext(productRes -> {
-                    Log.e(TAG, "getProductsObsFromNetwork: " + Thread
-                            .currentThread().getName());
-                })
-                .flatMap(Observable::from)
+                .compose(new RestCallTransformer<List<ProductRes>>()) // трансформируем response, выбрасываем ApiError в случае ошибки
+                .flatMap(Observable::from) // преобразуем список товаров в последовательность товаров
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(Schedulers.io())
                 .doOnNext(productRes -> {
                     if (!productRes.isActive()) {
-                        deleteFromDb(productRes);
+                        mRealmManager.deleteFromRealm(ProductRealm.class,
+                                productRes.getId());
                     }
                 })
                 .distinct(ProductRes::getRemoteId)
-                .filter(ProductRes::isActive)
-                .doOnNext(productRes -> {
-                    saveOnDisk(productRes);
-                })
-                .doOnCompleted(() -> {
-//                    generateProductsMockData();
-                });
-    }
-
-    private void deleteFromDb(ProductRes productRes) {
-        mPreferencesManager.deleteProduct(productRes);
-    }
-
-    @Nullable
-    public List<ProductDto> fromDisk() {
-        List<ProductDto> productDtoList = mPreferencesManager.getProductList();
-
-        if (productDtoList == null) {
-            productDtoList = generateProductsMockData();
-            mPreferencesManager.generateProductsMockData(productDtoList);
-        }
-        return productDtoList;
-    }
-
-    private void saveOnDisk(ProductRes productRes) {
-        mPreferencesManager.updateOrInsertProduct(productRes);
-    }
-
-    public Observable<ProductLocalInfo> getProductLocalInfoObs(ProductRes productRes) {
-        return Observable.just(getPreferencesManager().getLocalInfo(productRes
-                .getRemoteId()))
-                .flatMap(productLocalInfo ->
-                        productLocalInfo == null ?
-                                Observable.just(new ProductLocalInfo()) :
-                                Observable.just(productLocalInfo)
-                );
-    }
-
-    public ProductDto getProductById(int productId) {
-        // TODO: 28-Oct-16 gets product from mock (to be converted to DB)
-        return mMockProductList.get(productId - 1);
-    }
-
-    public void updateProduct(ProductDto product) {
-        // TODO: 28-Oct-16 update product count or other property and save to DB
+                .filter(ProductRes::isActive) // пропускаем только активные товары
+                .doOnNext(productRes -> mRealmManager.saveProductResponseToRealm(productRes)) // сохраняем на диск только активные товары
+                .flatMap(productRes -> Observable.empty());
     }
 
     //endregion
 
     private String getResVal(int resourceId) {
         return mContext.getString(resourceId);
+    }
+
+    public Observable<ProductRealm> getProductFromRealm() {
+        return mRealmManager.getAllProductsFromRealm();
     }
 }

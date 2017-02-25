@@ -1,7 +1,9 @@
 package com.crackncrunch.amplain.di.modules;
 
 import com.crackncrunch.amplain.data.network.RestService;
+import com.crackncrunch.amplain.data.network.res.CommentJsonAdapter;
 import com.crackncrunch.amplain.utils.AppConfig;
+import com.facebook.stetho.okhttp3.StethoInterceptor;
 import com.squareup.moshi.Moshi;
 
 import java.util.concurrent.TimeUnit;
@@ -45,6 +47,7 @@ public class NetworkModule {
     private OkHttpClient createClient() {
         return new OkHttpClient.Builder()
                 .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                .addNetworkInterceptor(new StethoInterceptor())
                 .connectTimeout(AppConfig.MAX_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
                 .readTimeout(AppConfig.MAX_READ_TIMEOUT, TimeUnit.MILLISECONDS)
                 .writeTimeout(AppConfig.MAX_WRITE_TIMEOUT, TimeUnit.MILLISECONDS)
@@ -61,6 +64,8 @@ public class NetworkModule {
     }
 
     private Converter.Factory createConverterFactory() {
-        return MoshiConverterFactory.create(new Moshi.Builder().build());
+        return MoshiConverterFactory.create(new Moshi.Builder()
+                .add(new CommentJsonAdapter())
+                .build());
     }
 }

@@ -10,6 +10,7 @@ buildscript {
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
         classpath 'com.fernandocejas.frodo:frodo-plugin:0.8.3'
         classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        classpath 'io.realm:realm-gradle-plugin:2.2.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -19,6 +20,10 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven {
+            // Realm db viewer (used only for debugging, not for release version)
+            url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo'
+        }
     }
 }
 

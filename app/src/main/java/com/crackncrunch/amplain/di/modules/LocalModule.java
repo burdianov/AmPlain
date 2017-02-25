@@ -3,6 +3,7 @@ package com.crackncrunch.amplain.di.modules;
 import android.content.Context;
 
 import com.crackncrunch.amplain.data.managers.PreferencesManager;
+import com.crackncrunch.amplain.data.managers.RealmManager;
 
 import dagger.Module;
 import dagger.Provides;
@@ -17,5 +18,10 @@ public class LocalModule {
     @Provides
     PreferencesManager providePreferencesManager(Context context) {
         return new PreferencesManager(context);
+    }
+
+    @Provides
+    RealmManager provideRealmManager() {
+        return new RealmManager();
     }
 }

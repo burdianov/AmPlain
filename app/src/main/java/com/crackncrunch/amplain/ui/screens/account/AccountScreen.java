@@ -339,7 +339,7 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
         @Nullable
         @Override
         protected IRootView getRootView() {
-            return mRootPresenter.getView();
+            return mRootPresenter.getRootView();
         }
 
         public void switchSettings() {

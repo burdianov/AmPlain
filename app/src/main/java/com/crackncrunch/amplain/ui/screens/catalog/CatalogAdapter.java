@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.crackncrunch.amplain.R;
-import com.crackncrunch.amplain.data.storage.dto.ProductDto;
+import com.crackncrunch.amplain.data.storage.realm.ProductRealm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class CatalogAdapter extends PagerAdapter {
 
     public static final String TAG = "CatalogAdapter";
 
-    private List<ProductDto> mProductList = new ArrayList<>();
+    private List<ProductRealm> mProductList = new ArrayList<>();
 
     public CatalogAdapter() {
     }
@@ -34,14 +34,14 @@ public class CatalogAdapter extends PagerAdapter {
         return view.equals(object);
     }
 
-    public void addItem(ProductDto product) {
+    public void addItem(ProductRealm product) {
         mProductList.add(product);
         notifyDataSetChanged();
     }
 
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
-        ProductDto product = mProductList.get(position);
+        ProductRealm product = mProductList.get(position);
         Context productContext = CatalogScreen.Factory.createProductContext
                 (product, container.getContext());
         View newView = LayoutInflater.from(productContext).inflate(R.layout

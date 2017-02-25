@@ -4,20 +4,24 @@ import android.os.Bundle;
 
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
-import com.crackncrunch.amplain.data.storage.dto.ProductLocalInfo;
+import com.crackncrunch.amplain.data.storage.realm.ProductRealm;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.scopes.ProductScope;
 import com.crackncrunch.amplain.flow.AbstractScreen;
 import com.crackncrunch.amplain.flow.Screen;
 import com.crackncrunch.amplain.mvp.models.CatalogModel;
+import com.crackncrunch.amplain.mvp.presenters.AbstractPresenter;
 import com.crackncrunch.amplain.mvp.presenters.IProductPresenter;
 import com.crackncrunch.amplain.ui.screens.catalog.CatalogScreen;
+import com.crackncrunch.amplain.ui.screens.product_details.DetailScreen;
 
 import javax.inject.Inject;
 
 import dagger.Provides;
+import flow.Flow;
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import mortar.MortarScope;
-import mortar.ViewPresenter;
 
 @Screen(R.layout.screen_product)
 public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
@@ -25,21 +29,21 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
     @Inject
     CatalogModel mCatalogModel;
 
-    private ProductDto mProductDto;
+    private ProductRealm mProductRealm;
 
-    public ProductScreen(ProductDto product) {
-        mProductDto = product;
+    public ProductScreen(ProductRealm product) {
+        mProductRealm = product;
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ProductScreen && mProductDto.equals(
-                ((ProductScreen) o).mProductDto);
+        return o instanceof ProductScreen && mProductRealm.equals(
+                ((ProductScreen) o).mProductRealm);
     }
 
     @Override
     public int hashCode() {
-        return mProductDto.hashCode();
+        return mProductRealm.hashCode();
     }
 
     @Override
@@ -57,7 +61,7 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
         @Provides
         @ProductScope
         ProductPresenter provideProductPresenter() {
-            return new ProductPresenter(mProductDto);
+            return new ProductPresenter(mProductRealm);
         }
     }
 
@@ -73,21 +77,24 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
 
     //region ==================== Presenter ===================
 
-    public class ProductPresenter extends ViewPresenter<ProductView>
+    public class ProductPresenter
+            extends AbstractPresenter<ProductView, CatalogModel>
             implements IProductPresenter {
 
-        @Inject
-        CatalogModel mCatalogModel;
+        private ProductRealm mProduct;
+        private RealmChangeListener mListener;
 
-        private ProductDto mProduct;
-
-        public ProductPresenter(ProductDto productDto) {
-            mProduct = productDto;
+        public ProductPresenter(ProductRealm productRealm) {
+            mProduct = productRealm;
         }
 
         @Override
-        protected void onEnterScope(MortarScope scope) {
-            super.onEnterScope(scope);
+        protected void initActionBar() {
+            // empty
+        }
+
+        @Override
+        protected void initDagger(MortarScope scope) {
             ((Component) scope.getService(DaggerService.SERVICE_NAME))
                     .inject(this);
         }
@@ -95,48 +102,56 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
         @Override
         protected void onLoad(Bundle savedInstanceState) {
             super.onLoad(savedInstanceState);
-            if (getView() != null) {
-                getView().showProductView(mCatalogModel.getProductById(mProduct
-                        .getId()));
+            if (getView() != null && mProduct.isValid()) {
+                getView().showProductView(new ProductDto(mProduct));
+
+                mListener = element -> {
+                    if (getView() != null) {
+                        getView().showProductView(new ProductDto(mProduct));
+                    }
+                };
+                mProduct.addChangeListener(mListener);
+            } else {
+
             }
+        }
+
+        @Override
+        public void dropView(ProductView view) {
+            mProduct.removeChangeListener(mListener);
+            super.dropView(view);
         }
 
         @Override
         public void clickOnPlus() {
             if (getView() != null) {
-                ProductLocalInfo pli = getView().getProductLocalInfo();
-                pli.setRemoteId(mProduct.getId());
-                pli.addCount();
-                mCatalogModel.updateProductLocalInfo(pli);
-                getView().updateProductCountView(mCatalogModel.getProductById
-                        (mProduct.getId()));
+                Realm realm = Realm.getDefaultInstance();
+                realm.executeTransaction(realm1 -> mProduct.add());
+                realm.close();
             }
         }
 
         @Override
         public void clickOnMinus() {
             if (getView() != null) {
-                ProductLocalInfo pli = getView().getProductLocalInfo();
-                if (pli.getCount() > 0) {
-                    pli.deleteCount();
-                    pli.setRemoteId(mProduct.getId());
-                    mCatalogModel.updateProductLocalInfo(pli);
-                    getView().updateProductCountView(mCatalogModel.getProductById
-                            (mProduct.getId()));
+                if (mProduct.getCount() > 0) {
+                    Realm realm = Realm.getDefaultInstance();
+                    realm.executeTransaction(realm1 -> mProduct.remove());
+                    realm.close();
                 }
             }
         }
 
         public void clickFavorite() {
             if (getView() != null) {
-                ProductLocalInfo pli = getView().getProductLocalInfo();
-                pli.setRemoteId(mProduct.getId());
-                mCatalogModel.updateProductLocalInfo(pli);
+                Realm realm = Realm.getDefaultInstance();
+                realm.executeTransaction(realm1 -> mProduct.toggleFavorite());
+                realm.close();
             }
         }
 
         public void clickShowMore() {
-            // TODO: 25-Feb-17 implement me
+            Flow.get(getView()).set(new DetailScreen(mProduct));
         }
     }
 

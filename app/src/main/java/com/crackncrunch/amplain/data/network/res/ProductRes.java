@@ -1,23 +1,21 @@
 package com.crackncrunch.amplain.data.network.res;
 
-import com.crackncrunch.amplain.data.storage.dto.CommentDto;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.squareup.moshi.Json;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProductRes {
+    @Json(name = "_id")
+    private String id;
     private int remoteId;
     private String productName;
     private String imageUrl;
     private String description;
     private int price;
-    @SerializedName("raiting")
-    @Expose
+    @Json(name = "raiting")
     private float rating;
     private boolean active;
-    private List<CommentDto> comments = null;
+    private List<CommentRes> comments = null;
 
     public int getRemoteId() {
         return remoteId;
@@ -47,15 +45,11 @@ public class ProductRes {
         return active;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public String getId() {
+        return id;
     }
 
-    public List<CommentDto> getComments() {
+    public List<CommentRes> getComments() {
         return comments;
-    }
-
-    public void setComments(ArrayList<CommentDto> comments) {
-        this.comments = comments;
     }
 }

@@ -4,9 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import com.crackncrunch.amplain.data.network.res.ProductRes;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
-import com.crackncrunch.amplain.data.storage.dto.ProductLocalInfo;
 import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
 import com.crackncrunch.amplain.utils.ConstantsManager;
 import com.google.gson.Gson;
@@ -14,7 +12,6 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -139,136 +136,12 @@ public class PreferencesManager {
         editor.apply();
     }
 
-    public ProductLocalInfo getLocalInfo(int remoteId) {
-        // TODO: 16-Dec-16 implement me
-        return null;
-    }
-
     public List<ProductDto> getProductList() {
         String products = mSharedPreferences.getString(MOCK_PRODUCT_LIST, null);
         if (products != null) {
             Gson gson = new Gson();
             ProductDto[] productList = gson.fromJson(products, ProductDto[].class);
             return Arrays.asList(productList);
-        }
-        return null;
-    }
-
-    public void generateProductsMockData(List<ProductDto> mockProductList) {
-        if (mSharedPreferences.getString(MOCK_PRODUCT_LIST, null) == null) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            Gson gson = new Gson();
-            String products = gson.toJson(mockProductList);
-            editor.putString(MOCK_PRODUCT_LIST, products);
-            editor.apply();
-        }
-    }
-
-    public void updateOrInsertProduct(ProductRes productRes) {
-        String products = mSharedPreferences.getString(MOCK_PRODUCT_LIST, null);
-        ProductDto productDto;
-        List<ProductDto> productDtoList;
-
-        if (products != null) {
-            Gson gson = new Gson();
-            ProductDto[] productList = gson.fromJson(products, ProductDto[].class);
-            productDtoList = new ArrayList<>(Arrays.asList(productList));
-            Iterator<ProductDto> iterator = productDtoList.iterator();
-
-            boolean found = false;
-            while (iterator.hasNext()) {
-                productDto = iterator.next();
-                if (productDto.getId() == productRes.getRemoteId()) {
-                    found = true;
-                    productDto.setId(productRes.getRemoteId());
-                    productDto.setProductName(productRes.getProductName());
-                    productDto.setImageUrl(productRes.getImageUrl());
-                    productDto.setDescription(productRes.getDescription());
-                    productDto.setPrice(productRes.getPrice());
-                    productDto.setComments(productRes.getComments());
-                }
-            }
-            if (!found) {
-                productDto = new ProductDto(
-                        productRes.getRemoteId(),
-                        productRes.getProductName(),
-                        productRes.getImageUrl(),
-                        productRes.getDescription(),
-                        productRes.getPrice(),
-                        0, false, productRes.getComments());
-                productDtoList.add(productDto);
-            }
-        } else {
-            productDto = new ProductDto(
-                    productRes.getRemoteId(),
-                    productRes.getProductName(),
-                    productRes.getImageUrl(),
-                    productRes.getDescription(),
-                    productRes.getPrice(),
-                    0, false, productRes.getComments());
-            productDtoList = new ArrayList<>();
-            productDtoList.add(productDto);
-        }
-        updateProductList(productDtoList);
-    }
-
-    public void updateOrInsertLocalInfo(ProductLocalInfo pli) {
-        String products = mSharedPreferences.getString(MOCK_PRODUCT_LIST, null);
-        if (products != null) {
-            ProductDto productDto;
-            Gson gson = new Gson();
-            ProductDto[] productList = gson.fromJson(products, ProductDto[].class);
-            Iterator<ProductDto> iterator = Arrays.asList(productList).iterator();
-            while (iterator.hasNext()) {
-                productDto = iterator.next();
-                if (productDto.getId() == pli.getRemoteId()) {
-                    productDto.setCount(pli.getCount());
-                    productDto.setFavorite(pli.isFavorite());
-                }
-            }
-            updateProductList(Arrays.asList(productList));
-        }
-    }
-
-    public void deleteProduct(ProductRes productRes) {
-        // TODO: 21-Dec-16 shall be fixed with Realm
-        String products = mSharedPreferences.getString(MOCK_PRODUCT_LIST, null);
-        ArrayList<ProductDto> productDtoList;
-        if (products != null) {
-            Gson gson = new Gson();
-            ProductDto[] productList = gson.fromJson(products, ProductDto[].class);
-            productDtoList = new ArrayList<>(Arrays.asList(productList));
-            Iterator<ProductDto> iterator = productDtoList.iterator();
-            ProductDto productDto;
-            while (iterator.hasNext()) {
-                productDto = iterator.next();
-                if (productDto.getId() == productRes.getRemoteId()) {
-                    iterator.remove();
-                }
-            }
-            updateProductList(productDtoList);
-        }
-    }
-
-    private void updateProductList(List<ProductDto> productDtoList) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        Gson gson = new Gson();
-        String products = gson.toJson(new ArrayList<>(productDtoList));
-        editor.putString(MOCK_PRODUCT_LIST, products);
-        editor.apply();
-    }
-
-    public ProductDto getProductById(int productId) {
-        // TODO: 28-Oct-16 gets product from mock (to be converted to DB)
-        String products = mSharedPreferences.getString(MOCK_PRODUCT_LIST, null);
-        if (products != null) {
-            Gson gson = new Gson();
-            ProductDto[] productList = gson.fromJson(products, ProductDto[].class);
-            for (ProductDto productDto : productList) {
-                if (productDto.getId() == productId) {
-                    return productDto;
-                }
-            }
         }
         return null;
     }

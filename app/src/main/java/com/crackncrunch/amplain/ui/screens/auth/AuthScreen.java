@@ -100,7 +100,7 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
 
         @Nullable
         private IRootView getRootView() {
-            return mRootPresenter.getView();
+            return mRootPresenter.getRootView();
         }
 
         @Override

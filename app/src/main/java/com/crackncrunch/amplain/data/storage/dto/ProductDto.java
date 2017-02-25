@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.crackncrunch.amplain.data.network.res.ProductRes;
+import com.crackncrunch.amplain.data.storage.realm.ProductRealm;
 
 import java.util.List;
 
@@ -28,6 +29,15 @@ public class ProductDto implements Parcelable {
         this.count = count;
         this.favorite = favorite;
         this.comments = comments;
+    }
+
+    public ProductDto(ProductRealm productRealm) {
+        this.productName = productRealm.getProductName();
+        this.imageUrl = productRealm.getImageUrl();
+        this.description = productRealm.getDescription();
+        this.price = productRealm.getPrice();
+        this.count = productRealm.getCount();
+        this.favorite = productRealm.isFavorite();
     }
 
     //region ==================== Parcelable ===================

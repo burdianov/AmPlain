@@ -78,15 +78,15 @@ public class SplashActivity extends AppCompatActivity implements IRootView {
     }
 
     @Override
-    protected void onResume() {
+    protected void onStart() {
         mRootPresenter.takeView(this);
-        super.onResume();
+        super.onStart();
     }
 
     @Override
-    protected void onPause() {
-        mRootPresenter.dropView();
-        super.onPause();
+    protected void onStop() {
+        mRootPresenter.dropView(this);
+        super.onStop();
     }
 
     @Override
