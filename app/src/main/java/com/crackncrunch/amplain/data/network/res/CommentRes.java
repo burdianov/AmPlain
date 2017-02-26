@@ -1,5 +1,6 @@
 package com.crackncrunch.amplain.data.network.res;
 
+import com.crackncrunch.amplain.data.storage.realm.CommentRealm;
 import com.squareup.moshi.Json;
 
 import java.util.Date;
@@ -27,6 +28,15 @@ public class CommentRes {
         this.commentDate = commentDate;
         this.comment = comment;
         this.active = active;
+    }
+
+    public CommentRes(CommentRealm comment) {
+        this.avatar = comment.getAvatar();
+        this.userName = comment.getUserName();
+        this.rating = comment.getRating();
+        this.commentDate = comment.getCommentDate();
+        this.comment = comment.getComment();
+        this.active = comment.isActive();
     }
 
     public String getId() {

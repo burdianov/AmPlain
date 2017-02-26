@@ -79,6 +79,21 @@ public class PreferencesManager {
         return mapProfileInfo;
     }
 
+    public void saveUserAvatar(String avatarUrl) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString(PROFILE_AVATAR_KEY, avatarUrl);
+        editor.apply();
+    }
+
+    public String getUserName() {
+        return mSharedPreferences.getString(PROFILE_FULL_NAME_KEY, "NoName");
+    }
+
+    public String getUserAvatar() {
+        return mSharedPreferences.getString(PROFILE_AVATAR_KEY,
+                "http://www.topglobus.ru/forum/images/avatars/gallery/filmy/Rambo.jpg");
+    }
+
     //endregion
 
     //region ==================== Addresses ===================

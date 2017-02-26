@@ -1,11 +1,14 @@
 package com.crackncrunch.amplain.data.managers;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.crackncrunch.amplain.App;
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.network.RestCallTransformer;
 import com.crackncrunch.amplain.data.network.RestService;
+import com.crackncrunch.amplain.data.network.res.AvatarUrlRes;
+import com.crackncrunch.amplain.data.network.res.CommentRes;
 import com.crackncrunch.amplain.data.network.res.ProductRes;
 import com.crackncrunch.amplain.data.storage.dto.CommentDto;
 import com.crackncrunch.amplain.data.storage.dto.ProductDto;
@@ -16,14 +19,20 @@ import com.crackncrunch.amplain.di.components.DaggerDataManagerComponent;
 import com.crackncrunch.amplain.di.components.DataManagerComponent;
 import com.crackncrunch.amplain.di.modules.LocalModule;
 import com.crackncrunch.amplain.di.modules.NetworkModule;
+import com.crackncrunch.amplain.utils.AppConfig;
+import com.crackncrunch.amplain.utils.NetworkStatusChecker;
+import com.fernandocejas.frodo.annotation.RxLogObservable;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import okhttp3.MultipartBody;
 import retrofit2.Retrofit;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -73,6 +82,8 @@ public class DataManager {
         initUserProfileData();
         initUserSettingsData();
         initAddressData();
+
+        updateLocalDataWithTimer();
     }
 
     public static DataManager getInstance() {
@@ -128,6 +139,10 @@ public class DataManager {
         mUserProfileInfo.put(PROFILE_PHONE_KEY, phone);
         mUserProfileInfo.put(PROFILE_AVATAR_KEY, avatar);
         mPreferencesManager.saveProfileInfo(mUserProfileInfo);
+    }
+
+    public Observable<AvatarUrlRes> uploadUserPhoto(MultipartBody.Part body) {
+        return mRestService.uploadUserAvatar(body);
     }
 
     //endregion
@@ -244,6 +259,21 @@ public class DataManager {
         return productDtoList;
     }
 
+    private void updateLocalDataWithTimer() {
+        Log.e(TAG, "LOCAL UPDATE start : " + new Date());
+        Observable.interval(AppConfig.UPDATE_DATA_INTERVAL, TimeUnit.SECONDS) // генерируем последовательность испускающую элементы каждые 30 секунд
+                .flatMap(aLong -> NetworkStatusChecker.isInternetAvailable()) // проверяем состояние сети
+                .filter(aBoolean -> aBoolean) // только если сеть доступна запрашиваем данные из сети
+                .flatMap(aBoolean -> getProductsObsFromNetwork()) // запрашиваем данные из сети
+                .subscribe(productRealm -> {
+                    Log.e(TAG, "LOCAL UPDATE complete: ");
+                }, throwable -> {
+                    throwable.printStackTrace();
+                    Log.e(TAG, "LOCAL UPDATE error: " + throwable.getMessage());
+                });
+    }
+
+    @RxLogObservable
     public Observable<ProductRealm> getProductsObsFromNetwork() {
         return mRestService.getProductResObs(mPreferencesManager.getLastProductUpdate())
                 .compose(new RestCallTransformer<List<ProductRes>>()) // трансформируем response, выбрасываем ApiError в случае ошибки
@@ -253,22 +283,45 @@ public class DataManager {
                 .doOnNext(productRes -> {
                     if (!productRes.isActive()) {
                         mRealmManager.deleteFromRealm(ProductRealm.class,
-                                productRes.getId());
+                                productRes.getId()); // удалить из базы данных если не активен
                     }
                 })
                 .distinct(ProductRes::getRemoteId)
-                .filter(ProductRes::isActive) // пропускаем только активные товары
-                .doOnNext(productRes -> mRealmManager.saveProductResponseToRealm(productRes)) // сохраняем на диск только активные товары
+                .filter(ProductRes::isActive) // пропускаем дальше только активные товары
+                .doOnNext(productRes -> mRealmManager.saveProductResponseToRealm
+                        (productRes)) // сохраняем на диск только активные товары
+                .retryWhen(errorObservable ->
+                        errorObservable.zipWith(Observable.range(1,
+                                AppConfig.RETRY_REQUEST_COUNT),
+                                (throwable, retryCount) -> retryCount) // генерируем последовательность чисел от 1 до 5 (число повторений запроса)
+                                .doOnNext(retryCount -> Log.e(TAG, "LOCAL UPDATE request retry " +
+                                        "count: " + retryCount + " " + new Date()))
+                                .map(retryCount ->
+                                        ((long) (AppConfig.RETRY_REQUEST_BASE_DELAY * Math
+                                                .pow(Math.E, retryCount)))) // расчитываем экспоненциальную задержку
+                                .doOnNext(delay -> Log.e(TAG, "LOCAL UPDATE delay: " +
+                                        delay))
+                                .flatMap(delay -> Observable.timer(delay,
+                                        TimeUnit.MILLISECONDS)) // создаем и возвращаем задержку в миллисекундах
+                )
                 .flatMap(productRes -> Observable.empty());
+    }
+
+    public Observable<ProductRealm> getProductFromRealm() {
+        return mRealmManager.getAllProductsFromRealm();
+    }
+
+    //endregion
+
+    //region ==================== Comments ===================
+
+    public Observable<CommentRes> sendComment(String productId, CommentRes comment) {
+        return mRestService.sendComment(productId, comment);
     }
 
     //endregion
 
     private String getResVal(int resourceId) {
         return mContext.getString(resourceId);
-    }
-
-    public Observable<ProductRealm> getProductFromRealm() {
-        return mRealmManager.getAllProductsFromRealm();
     }
 }

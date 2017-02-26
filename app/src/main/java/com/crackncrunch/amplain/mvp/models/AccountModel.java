@@ -3,6 +3,7 @@ package com.crackncrunch.amplain.mvp.models;
 import com.crackncrunch.amplain.data.storage.dto.UserAddressDto;
 import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
 import com.crackncrunch.amplain.data.storage.dto.UserSettingsDto;
+import com.crackncrunch.amplain.jobs.UploadAvatarJob;
 
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,11 @@ public class AccountModel extends AbstractModel {
         mDataManager.saveUserProfileInfo(userInfo.getName(), userInfo.getPhone(),
                 userInfo.getAvatar());
         mUserInfoObs.onNext(userInfo);
+
+        String uriAvatar = userInfo.getAvatar();
+        if (!uriAvatar.contains("http")) {
+            uploadAvatarToServer(uriAvatar);
+        }
     }
 
     public UserInfoDto getUserProfileInfo() {
@@ -85,6 +91,10 @@ public class AccountModel extends AbstractModel {
 
     public Observable<UserInfoDto> getUserInfoObs() {
         return mUserInfoObs;
+    }
+
+    private void uploadAvatarToServer(String imageUri) {
+        mJobManager.addJobInBackground(new UploadAvatarJob(imageUri));
     }
 
     //endregion

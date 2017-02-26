@@ -90,6 +90,10 @@ dependencies {
     // Stetho
     compile 'com.facebook.stetho:stetho:1.4.2'
     compile 'com.facebook.stetho:stetho-okhttp3:1.4.2'
-    // Stetho for base Flavor
+
+    // base Flavor
+    // Stetho Realm
     baseCompile 'com.uphyca:stetho_realm:2.0.0'
+    // Android Priority Job Queue
+    baseCompile 'com.birbit:android-priority-jobqueue:2.0.1'
 }

@@ -1,5 +1,6 @@
 package com.crackncrunch.amplain.mvp.models;
 
+import com.birbit.android.jobqueue.JobManager;
 import com.crackncrunch.amplain.data.managers.DataManager;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.components.DaggerModelComponent;
@@ -16,6 +17,8 @@ public abstract class AbstractModel {
 
     @Inject
     DataManager mDataManager;
+    @Inject
+    JobManager mJobManager;
 
     public AbstractModel() {
         ModelComponent component =

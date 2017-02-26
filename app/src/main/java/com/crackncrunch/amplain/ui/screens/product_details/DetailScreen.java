@@ -3,6 +3,7 @@ package com.crackncrunch.amplain.ui.screens.product_details;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import com.crackncrunch.amplain.BuildConfig;
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.storage.realm.CommentRealm;
 import com.crackncrunch.amplain.data.storage.realm.ProductRealm;
@@ -73,13 +74,10 @@ public class DetailScreen extends AbstractScreen<CatalogScreen.Component>
     @DaggerScope(DetailScreen.class)
     public interface Component {
         void inject(DetailPresenter presenter);
-
         void inject(DetailView view);
 
         DetailModel getDetailModel();
-
         RootPresenter getRootPresenter();
-
         Picasso getPicasso();
     }
 
@@ -152,9 +150,16 @@ public class DetailScreen extends AbstractScreen<CatalogScreen.Component>
         }
 
         public void addComment(CommentRealm commentRealm) {
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransaction(realm1 -> mProduct.getCommentsRealm().add(commentRealm));
-            realm.close();
+            switch (BuildConfig.FLAVOR) {
+                case "base":
+                    mModel.sendComment(mProduct.getId(), commentRealm);
+                    break;
+                case "realmMp":
+                    Realm realm = Realm.getDefaultInstance();
+                    realm.executeTransaction(realm1 -> mProduct.getCommentsRealm().add(commentRealm));
+                    realm.close();
+                    break;
+            }
         }
     }
 
