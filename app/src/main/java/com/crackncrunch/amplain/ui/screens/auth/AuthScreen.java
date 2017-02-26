@@ -95,6 +95,7 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
                 } else {
                     getView().showLoginBtn();
                 }
+                getView().setTypeface();
             }
         }
 

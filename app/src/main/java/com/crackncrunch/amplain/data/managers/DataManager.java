@@ -52,7 +52,6 @@ public class DataManager {
     @Inject
     RealmManager mRealmManager;
 
-    private List<ProductDto> mMockProductList;
     private Map<String, String> mUserProfileInfo;
     private List<UserAddressDto> mUserAddresses;
     private Map<String, Boolean> mUserSettings;
@@ -69,8 +68,6 @@ public class DataManager {
             DaggerService.registerComponent(DataManagerComponent.class, component);
         }
         component.inject(this);
-
-        mMockProductList = new ArrayList<>();
 
         generateProductsMockData();
         initUserProfileData();

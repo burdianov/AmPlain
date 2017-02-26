@@ -8,8 +8,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 
 import com.crackncrunch.amplain.App;
+import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.data.storage.dto.ActivityResultDto;
 import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
 import com.crackncrunch.amplain.mvp.models.AccountModel;
@@ -70,11 +72,11 @@ public class RootPresenter extends Presenter<IRootView> {
     }
 
     @Override
-    public void dropView(IRootView view) {
+    protected void onExitScope() {
         if (mUserInfoSub != null) {
             mUserInfoSub.unsubscribe();
         }
-        super.dropView(view);
+        super.onExitScope();
     }
 
     private Subscription subscribeOnUserInfoObs() {
@@ -91,6 +93,10 @@ public class RootPresenter extends Presenter<IRootView> {
 
     public ActionBarBuilder newActionBarBuilder() {
         return this.new ActionBarBuilder();
+    }
+
+    public FabBuilder newFabBuilder() {
+        return this.new FabBuilder();
     }
 
     @RxLogSubscriber
@@ -198,4 +204,31 @@ public class RootPresenter extends Presenter<IRootView> {
         }
     }
 
+    public class FabBuilder {
+        private boolean isVisible = false;
+        private int icon = R.drawable.ic_favorite_white_24dp;
+        private View.OnClickListener onClickListener = null;
+
+        public FabBuilder setVisible(boolean isVisible) {
+            this.isVisible = isVisible;
+            return this;
+        }
+
+        public FabBuilder setIcon(int icon) {
+            this.icon = icon;
+            return this;
+        }
+
+        public FabBuilder setOnClickListener(View.OnClickListener onClickListener) {
+            this.onClickListener = onClickListener;
+            return this;
+        }
+
+        public void build() {
+            if (getView() != null) {
+                RootActivity activity = (RootActivity) getView();
+                activity.setFab(isVisible, icon, onClickListener);
+            }
+        }
+    }
 }

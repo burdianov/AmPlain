@@ -8,7 +8,7 @@
     <string name="roboto_medium">sans-serif-medium</string>
 
     <!-- Misc -->
-    <string name="app_name">AndroidMiddlePlain</string>
+    <string name="app_name">AndroidMiddlePlain RealmMp</string>
     <string name="enter_email">Enter email</string>
     <string name="enter_password">Enter password</string>
     <string name="view_catalog">View catalog</string>
@@ -104,6 +104,5 @@
     <string name="save_comment">Save comment</string>
     <string name="empty_field">Empty field</string>
     <string name="can_not_be_empty">The comment field can not be empty</string>
-    <string name="rate_this_product">Rate this product</string>
 
 </resources>

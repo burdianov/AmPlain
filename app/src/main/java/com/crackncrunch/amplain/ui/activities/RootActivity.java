@@ -10,9 +10,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -21,6 +23,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,6 +44,7 @@ import com.crackncrunch.amplain.mvp.models.AccountModel;
 import com.crackncrunch.amplain.mvp.presenters.MenuItemHolder;
 import com.crackncrunch.amplain.mvp.presenters.RootPresenter;
 import com.crackncrunch.amplain.mvp.views.IActionBarView;
+import com.crackncrunch.amplain.mvp.views.IFabView;
 import com.crackncrunch.amplain.mvp.views.IRootView;
 import com.crackncrunch.amplain.mvp.views.IView;
 import com.crackncrunch.amplain.ui.screens.account.AccountScreen;
@@ -57,8 +61,10 @@ import flow.Flow;
 import mortar.MortarScope;
 import mortar.bundler.BundleServiceRunner;
 
+import static com.crackncrunch.amplain.App.getContext;
+
 public class RootActivity extends AppCompatActivity
-        implements IRootView, IActionBarView,
+        implements IRootView, IActionBarView, IFabView,
         NavigationView.OnNavigationItemSelectedListener {
 
     @BindView(R.id.drawer_layout)
@@ -341,6 +347,39 @@ public class RootActivity extends AppCompatActivity
 
     //endregion
 
+    //region ==================== FabView ===================
+
+    @Override
+    public void setFab(boolean isVisible, int icon,
+                       View.OnClickListener onClickListener) {
+        if (isVisible) {
+            FloatingActionButton fab;
+            if (mCoordinatorContainer.findViewById(R.id.common_fab) == null) {
+                fab = (FloatingActionButton) LayoutInflater.from
+                        (this).inflate(R.layout.fab, mCoordinatorContainer, false);
+                mCoordinatorContainer.addView(fab);
+            } else {
+                fab = (FloatingActionButton) mCoordinatorContainer.findViewById(R.id.common_fab);
+            }
+
+            fab.setImageDrawable(ContextCompat.getDrawable(getContext(), icon));
+            fab.setOnClickListener(onClickListener);
+        } else {
+            removeFab();
+        }
+    }
+
+    @Override
+    public void removeFab() {
+        View fab = mCoordinatorContainer.getChildAt(2);
+        if (fab != null && fab instanceof FloatingActionButton) {
+            fab.setOnClickListener(null);
+            mCoordinatorContainer.removeView(fab);
+        }
+    }
+
+    //endregion
+
     //region ==================== DI ===================
 
     @dagger.Component(dependencies = AppComponent.class,
@@ -348,15 +387,11 @@ public class RootActivity extends AppCompatActivity
     @RootScope
     public interface RootComponent {
         void inject(RootActivity activity);
-
         void inject(SplashActivity activity);
-
         void inject(RootPresenter presenter);
 
         AccountModel getAccountModel();
-
         RootPresenter getRootPresenter();
-
         Picasso getPicasso();
     }
 

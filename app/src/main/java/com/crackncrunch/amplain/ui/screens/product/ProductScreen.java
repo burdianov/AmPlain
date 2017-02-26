@@ -94,6 +94,13 @@ public class ProductScreen extends AbstractScreen<CatalogScreen.Component> {
         }
 
         @Override
+        protected void initFab() {
+            mRootPresenter.newFabBuilder()
+                    .setVisible(false)
+                    .build();
+        }
+
+        @Override
         protected void initDagger(MortarScope scope) {
             ((Component) scope.getService(DaggerService.SERVICE_NAME))
                     .inject(this);

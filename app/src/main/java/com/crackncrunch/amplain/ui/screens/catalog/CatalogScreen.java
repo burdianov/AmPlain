@@ -108,6 +108,11 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
         }
 
         @Override
+        protected void initFab() {
+            // empty
+        }
+
+        @Override
         public void clickOnBuyButton(int position) {
             if (getView() != null) {
                 if (checkUserAuth() && getRootView() != null) {

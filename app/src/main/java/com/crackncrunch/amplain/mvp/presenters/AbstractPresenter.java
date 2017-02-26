@@ -34,7 +34,7 @@ public abstract class AbstractPresenter<V extends AbstractView,
 
     protected CompositeSubscription mCompSubs;
     protected abstract void initActionBar();
-    //protected abstract void initFab();
+    protected abstract void initFab();
     protected abstract void initDagger(MortarScope scope);
 
     @Override

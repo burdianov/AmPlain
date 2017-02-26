@@ -16,5 +16,5 @@ import dagger.Component;
         modules = {NetworkModule.class, LocalModule.class})
 @Singleton
 public interface DataManagerComponent {
-    void inject(DataManager target);
+    void inject(DataManager dataManager);
 }

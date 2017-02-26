@@ -5,11 +5,9 @@ package com.crackncrunch.amplain.mvp.views;
  */
 
 public interface IAuthView extends IView {
-
+    void setTypeface();
     void showLoginBtn();
     void hideLoginBtn();
-
-    void showCatalogScreen();
 
     String getUserEmail();
     String getUserPassword();

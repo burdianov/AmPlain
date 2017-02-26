@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.crackncrunch.amplain.R;
+import com.crackncrunch.amplain.data.storage.realm.CommentRealm;
 import com.crackncrunch.amplain.data.storage.realm.ProductRealm;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.di.scopes.DaggerScope;
@@ -18,6 +19,7 @@ import com.squareup.picasso.Picasso;
 
 import dagger.Provides;
 import flow.TreeKey;
+import io.realm.Realm;
 import mortar.MortarScope;
 
 /**
@@ -71,10 +73,13 @@ public class DetailScreen extends AbstractScreen<CatalogScreen.Component>
     @DaggerScope(DetailScreen.class)
     public interface Component {
         void inject(DetailPresenter presenter);
+
         void inject(DetailView view);
 
         DetailModel getDetailModel();
+
         RootPresenter getRootPresenter();
+
         Picasso getPicasso();
     }
 
@@ -83,7 +88,7 @@ public class DetailScreen extends AbstractScreen<CatalogScreen.Component>
     //region ==================== Presenter ===================
 
     public class DetailPresenter extends AbstractPresenter<DetailView,
-                DetailModel> {
+            DetailModel> {
 
         private final ProductRealm mProduct;
 
@@ -107,15 +112,49 @@ public class DetailScreen extends AbstractScreen<CatalogScreen.Component>
         }
 
         @Override
+        protected void initFab() {
+            // empty
+        }
+
+        protected void initFab(int page) {
+            switch (page) {
+                case 0:
+                    mRootPresenter.newFabBuilder()
+                            .setIcon(R.drawable.ic_favorite_white_24dp)
+                            .setVisible(true)
+                            .setOnClickListener(v -> getRootView().showMessage
+                                    ("Favorite button clicked")).build();
+                    break;
+                case 1:
+                    mRootPresenter.newFabBuilder()
+                            .setIcon(R.drawable.ic_add_white_24dp)
+                            .setVisible(true)
+                            .setOnClickListener(v -> clickOnAddComment())
+                            .build();
+                    break;
+            }
+        }
+
+        @Override
         protected void initDagger(MortarScope scope) {
-            ((Component) scope.getService(DaggerService.SERVICE_NAME)).inject
-                    (this);
+            ((Component) scope.getService(DaggerService.SERVICE_NAME))
+                    .inject(this);
         }
 
         @Override
         protected void onLoad(Bundle savedInstanceState) {
             super.onLoad(savedInstanceState);
             getView().initView(mProduct);
+        }
+
+        private void clickOnAddComment() {
+            getView().showAddCommentDialog();
+        }
+
+        public void addComment(CommentRealm commentRealm) {
+            Realm realm = Realm.getDefaultInstance();
+            realm.executeTransaction(realm1 -> mProduct.getCommentsRealm().add(commentRealm));
+            realm.close();
         }
     }
 

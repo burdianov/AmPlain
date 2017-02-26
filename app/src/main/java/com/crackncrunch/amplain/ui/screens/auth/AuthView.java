@@ -1,11 +1,13 @@
 package com.crackncrunch.amplain.ui.screens.auth;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.di.DaggerService;
@@ -18,6 +20,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import flow.Flow;
 
+import static com.crackncrunch.amplain.utils.ConstantsManager.CUSTOM_FONTS_ROOT;
+import static com.crackncrunch.amplain.utils.ConstantsManager.CUSTOM_FONT_NAME;
+
 /**
  * Created by Lilian on 21-Feb-17.
  */
@@ -27,6 +32,8 @@ public class AuthView extends RelativeLayout implements IAuthView {
     public static final int LOGIN_STATE = 0;
     public static final int IDLE_STATE = 1;
 
+    @BindView(R.id.app_name_txt)
+    TextView mAppNameTxt;
     @BindView(R.id.auth_card)
     CardView mAuthCard;
     @BindView(R.id.show_catalog_btn)
@@ -129,6 +136,12 @@ public class AuthView extends RelativeLayout implements IAuthView {
     //region ==================== IAuthView ===================
 
     @Override
+    public void setTypeface() {
+        mAppNameTxt.setTypeface(Typeface.createFromAsset(getContext().getAssets(),
+                CUSTOM_FONTS_ROOT + CUSTOM_FONT_NAME));
+    }
+
+    @Override
     public void showLoginBtn() {
         mLoginBtn.setVisibility(VISIBLE);
     }
@@ -136,11 +149,6 @@ public class AuthView extends RelativeLayout implements IAuthView {
     @Override
     public void hideLoginBtn() {
         mLoginBtn.setVisibility(GONE);
-    }
-
-    @Override
-    public void showCatalogScreen() {
-        mPresenter.clickOnShowCatalog();
     }
 
     @Override
