@@ -46,6 +46,7 @@ public class CatalogAdapter extends PagerAdapter {
                 (product, container.getContext());
         View newView = LayoutInflater.from(productContext).inflate(R.layout
                 .screen_product, container, false);
+        newView.setTag("Product" + position);  // добавляем таг к вью продукта
         container.addView(newView);
         return newView;
     }

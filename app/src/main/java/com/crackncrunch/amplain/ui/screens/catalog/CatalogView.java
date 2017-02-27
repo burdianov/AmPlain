@@ -9,6 +9,7 @@ import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.mvp.views.AbstractView;
 import com.crackncrunch.amplain.mvp.views.ICatalogView;
+import com.crackncrunch.amplain.ui.screens.product.ProductView;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -67,6 +68,10 @@ public class CatalogView extends AbstractView<CatalogScreen.CatalogPresenter>
     @OnClick(R.id.add_to_card_btn)
     void clickAddToCart() {
         mPresenter.clickOnBuyButton(mProductPager.getCurrentItem());
+    }
+
+    public ProductView getCurrentProductView() {
+        return (ProductView) mProductPager.findViewWithTag("Product" + mProductPager.getCurrentItem());
     }
 
     //endregion

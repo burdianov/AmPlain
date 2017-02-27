@@ -108,7 +108,7 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
         public void clickOnLogin() {
             if (getView() != null && getRootView() != null) {
                 if (getView().isIdle()) {
-                    getView().setCustomState(AuthView.LOGIN_STATE);
+                    getView().showLoginWithAnim();
                 } else {
                     // TODO: 21-Oct-16 auth user
                     mAuthModel.loginUser(getView().getUserEmail(),getView().getUserPassword());
@@ -140,8 +140,7 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
 
         @Override
         public void clickOnShowCatalog() {
-            if (getRootView() != null && getRootView() != null) {
-                getRootView().showMessage("Show Catalog");
+            if (getRootView() != null) {
                 if (getRootView() instanceof SplashActivity) {
                     ((SplashActivity) getRootView()).startRootActivity();
                 } else {

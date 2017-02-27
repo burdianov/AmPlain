@@ -8,12 +8,8 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        /*applicationId "com.crackncrunch.amplain"
-        minSdkVersion 16*/
+        vectorDrawables.useSupportLibrary = true
         targetSdkVersion 25
-        /*versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"*/
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -96,4 +92,7 @@ dependencies {
     baseCompile 'com.uphyca:stetho_realm:2.0.0'
     // Android Priority Job Queue
     baseCompile 'com.birbit:android-priority-jobqueue:2.0.1'
+
+    // Transitions backwards compatibility (for versions less than Lollipop)
+    compile 'com.andkulikov:transitionseverywhere:1.7.0'
 }

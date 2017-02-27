@@ -115,10 +115,8 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
         @Override
         public void clickOnBuyButton(int position) {
             if (getView() != null) {
-                if (checkUserAuth() && getRootView() != null) {
-                    getRootView().showMessage("Item " + mModel.getProductList()
-                            .get(position).getProductName() +
-                            " added successfully to the Cart");
+                if (checkUserAuth()) {
+                    getView().getCurrentProductView().startAddToCartAnim();
                 } else {
                     Flow.get(getView()).set(new AuthScreen());
                 }

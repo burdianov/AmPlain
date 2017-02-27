@@ -1,17 +1,34 @@
 package com.crackncrunch.amplain.ui.screens.auth;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.os.Build;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.crackncrunch.amplain.R;
 import com.crackncrunch.amplain.di.DaggerService;
 import com.crackncrunch.amplain.mvp.views.IAuthView;
+import com.crackncrunch.amplain.utils.ViewHelper;
+import com.transitionseverywhere.ChangeBounds;
+import com.transitionseverywhere.Fade;
+import com.transitionseverywhere.Transition;
+import com.transitionseverywhere.TransitionManager;
+import com.transitionseverywhere.TransitionSet;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -19,6 +36,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import flow.Flow;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 import static com.crackncrunch.amplain.utils.ConstantsManager.CUSTOM_FONTS_ROOT;
 import static com.crackncrunch.amplain.utils.ConstantsManager.CUSTOM_FONT_NAME;
@@ -44,11 +65,21 @@ public class AuthView extends RelativeLayout implements IAuthView {
     EditText mEmailEt;
     @BindView(R.id.login_password_et)
     EditText mPasswordEt;
-
-    private AuthScreen mScreen;
+    @BindView(R.id.panel_wrapper)
+    FrameLayout mPanelWrapper;
+    @BindView(R.id.logo_img)
+    ImageView mLogo;
 
     @Inject
     AuthScreen.AuthPresenter mPresenter;
+
+    private final ChangeBounds mBounds;
+    private final Fade mFade;
+    private final Animator mScaleAnimator;
+
+    private AuthScreen mScreen;
+    private float mDen;
+    private Subscription mAnimObs;
 
     public AuthView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -57,7 +88,13 @@ public class AuthView extends RelativeLayout implements IAuthView {
             DaggerService.<AuthScreen.Component>getDaggerComponent(context)
                     .inject(this);
         }
-        // TODO: 22-Feb-17 get mScreen and dagger component
+
+        mBounds = new ChangeBounds();
+        mFade = new Fade();
+        mDen = ViewHelper.getDensity(context);
+
+        mScaleAnimator = AnimatorInflater.loadAnimator(getContext(), R
+                .animator.logo_scale_animator);
     }
 
     @Override
@@ -67,6 +104,7 @@ public class AuthView extends RelativeLayout implements IAuthView {
 
         if (!isInEditMode()) {
             showViewFromState();
+            startLogoAnim();
         }
     }
 
@@ -83,11 +121,12 @@ public class AuthView extends RelativeLayout implements IAuthView {
         super.onDetachedFromWindow();
         if (!isInEditMode()) {
             mPresenter.dropView(this);
+            mAnimObs.unsubscribe();
         }
     }
 
     private void showViewFromState() {
-        if (mScreen.getCustomState() == LOGIN_STATE) {
+        if (!isIdle()) {
             showLoginState();
         } else {
             showIdleState();
@@ -95,13 +134,27 @@ public class AuthView extends RelativeLayout implements IAuthView {
     }
 
     private void showLoginState() {
-        mAuthCard.setVisibility(VISIBLE);
-        mShowCatalogBtn.setVisibility(GONE);
+        CardView.LayoutParams cardParam = (CardView.LayoutParams)
+                mAuthCard.getLayoutParams(); // получаем текущие параметры макета
+        cardParam.height = LinearLayout.LayoutParams.MATCH_PARENT; // устанавливаем высоту на высоту родителя
+        mAuthCard.setLayoutParams(cardParam); // устанавливаем параметры (requestLayout inside)
+        mAuthCard.getChildAt(0).setVisibility(VISIBLE); // input wrapper делаем видимым
+        mAuthCard.setCardElevation(4 * mDen); // устанавливаем подъем карточки авторизации
+        mShowCatalogBtn.setClickable(false); // отключаем кликабельность кнопки входа в каталог
+        mShowCatalogBtn.setVisibility(GONE); // скрываем кнопку
+        mScreen.setCustomState(LOGIN_STATE); // устанавливаем стейт LOGIN
     }
 
     private void showIdleState() {
-        mAuthCard.setVisibility(GONE);
+        CardView.LayoutParams cardParam = (CardView.LayoutParams)
+                mAuthCard.getLayoutParams();
+        cardParam.height = ((int) (44 * mDen));
+        mAuthCard.setLayoutParams(cardParam);
+        mAuthCard.getChildAt(0).setVisibility(INVISIBLE);
+        mAuthCard.setCardElevation(0f);
+        mShowCatalogBtn.setClickable(true);
         mShowCatalogBtn.setVisibility(VISIBLE);
+        mScreen.setCustomState(IDLE_STATE);
     }
 
     //region ==================== Events ===================
@@ -167,18 +220,71 @@ public class AuthView extends RelativeLayout implements IAuthView {
     }
 
     @Override
-    public void setCustomState(int state) {
-        mScreen.setCustomState(state);
-        showViewFromState();
-    }
-
-    @Override
     public boolean viewOnBackPressed() {
         if (!isIdle()) {
-            setCustomState(IDLE_STATE);
+            showIdleWithAnim();
             return true;
         } else {
             return false;
+        }
+    }
+
+    //endregion
+
+    @OnClick(R.id.logo_img)
+    void test() {
+        // TODO: 26-Feb-17 start in case of invalid input of login or password
+        //invalidLoginAnimation();
+        showLoginWithAnim();
+    }
+
+    //region ==================== Animation ===================
+
+    private void invalidLoginAnimation() {
+        AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(
+                getContext(), R.animator.invalid_field_animator);
+        set.setTarget(mAuthCard);
+        set.start();
+    }
+
+    public void showLoginWithAnim() {
+        TransitionSet set = new TransitionSet();
+        set.addTransition(mBounds) // анимируем положение и границы (высоту элемента и подъем)
+                .addTransition(mFade) // анимируем прозрачность (видимость элементов)
+                //.setDuration(300) // продолжительность анимации
+                .setInterpolator(new FastOutSlowInInterpolator()) // устанавливаем временную функцию
+                .setOrdering(TransitionSet.ORDERING_SEQUENTIAL); // устанавливаем последовательность проигрывания анимаций при переходе
+        TransitionManager.beginDelayedTransition(mPanelWrapper, set);
+        showLoginState();
+    }
+
+    private void showIdleWithAnim() {
+        TransitionSet set = new TransitionSet();
+        Transition fade = new Fade();
+        fade.addTarget(mAuthCard.getChildAt(0)); // анимация исчезновения для инпутов
+        set.addTransition(fade)
+                .addTransition(mBounds) // анимируем положение и границы (высоту элемента и подъем)
+                .addTransition(mFade) // анимируем прозрачность (видимость элементов)
+                //.setDuration(5000) // продолжительность анимации
+                .setInterpolator(new FastOutSlowInInterpolator()) // устанавливаем временную функцию
+                .setOrdering(TransitionSet.ORDERING_SEQUENTIAL); // устанавливаем последовательность проигрывания анимаций при переходе
+        TransitionManager.beginDelayedTransition(mPanelWrapper, set);
+        showIdleState();
+    }
+
+    private void startLogoAnim() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            AnimatedVectorDrawable avd = (AnimatedVectorDrawable) mLogo.getDrawable();
+            mScaleAnimator.setTarget(mLogo);
+
+            mAnimObs = Observable.interval(3000, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(aLong -> {
+                        mScaleAnimator.start();
+                        avd.start();
+                    });
+            avd.start();
         }
     }
 
