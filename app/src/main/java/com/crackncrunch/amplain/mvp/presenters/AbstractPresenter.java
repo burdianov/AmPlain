@@ -48,7 +48,7 @@ public abstract class AbstractPresenter<V extends AbstractView,
         super.onLoad(savedInstanceState);
         mCompSubs = new CompositeSubscription();
         initActionBar();
-        //initFab();
+        initFab();
     }
 
     @Override

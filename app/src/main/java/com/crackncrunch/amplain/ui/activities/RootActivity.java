@@ -175,7 +175,6 @@ public class RootActivity extends AppCompatActivity
         return false;
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -361,8 +360,8 @@ public class RootActivity extends AppCompatActivity
                 mCoordinatorContainer.addView(fab);
             } else {
                 fab = (FloatingActionButton) mCoordinatorContainer.findViewById(R.id.common_fab);
+                fab.show();
             }
-
             fab.setImageDrawable(ContextCompat.getDrawable(getContext(), icon));
             fab.setOnClickListener(onClickListener);
         } else {
@@ -375,7 +374,7 @@ public class RootActivity extends AppCompatActivity
         View fab = mCoordinatorContainer.getChildAt(2);
         if (fab != null && fab instanceof FloatingActionButton) {
             fab.setOnClickListener(null);
-            mCoordinatorContainer.removeView(fab);
+            ((FloatingActionButton) fab).hide();
         }
     }
 

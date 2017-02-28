@@ -69,7 +69,7 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
 
     private AnimatorSet mResultSet;
     private ArrayList<View> mChildrenList;
-    private boolean isZoomed;
+    private boolean mIsZoomed;
     private int mInitImageHeight;
     private float mDen;
 
@@ -132,7 +132,7 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
 
     @Override
     public boolean viewOnBackPressed() {
-        if (isZoomed) {
+        if (mIsZoomed) {
             startZoomTransition();
             return true;
         }
@@ -268,7 +268,7 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
         ChangeImageTransform imageTransform = new ChangeImageTransform();
 
         // TODO: 28-Feb-17 Clarify why the below lines affect the zooming
-        /*if (!isZoomed) {
+        /*if (!mIsZoomed) {
             changeBounds.setStartDelay(100);
             imageTransform.setStartDelay(100);
         }*/
@@ -286,19 +286,19 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
                     R.id.product_image);
         }
         ViewGroup.LayoutParams cardParam = mProductCard.getLayoutParams();
-        cardParam.height = !isZoomed
+        cardParam.height = !mIsZoomed
                 ? ViewGroup.LayoutParams.MATCH_PARENT
                 : ViewGroup.LayoutParams.WRAP_CONTENT;
         mProductCard.setLayoutParams(cardParam);
 
         ViewGroup.LayoutParams wrapParam = mProductWrapper.getLayoutParams();
-        wrapParam.height = !isZoomed
+        wrapParam.height = !mIsZoomed
                 ? ViewGroup.LayoutParams.MATCH_PARENT
                 : ViewGroup.LayoutParams.WRAP_CONTENT;
         mProductWrapper.setLayoutParams(wrapParam);
 
         LinearLayout.LayoutParams imgParams;
-        if (!isZoomed) {
+        if (!mIsZoomed) {
             mInitImageHeight = mProductImage.getHeight();
             imgParams = new LinearLayout
                     .LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -312,7 +312,7 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
             mProductImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
         }
         mProductImage.setLayoutParams(imgParams);
-        if (!isZoomed) {
+        if (!mIsZoomed) {
             for (View view : mChildrenList) {
                 view.setVisibility(GONE);
             }
@@ -321,7 +321,7 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
                 view.setVisibility(VISIBLE);
             }
         }
-        isZoomed = !isZoomed;
+        mIsZoomed = !mIsZoomed;
     }
 
     //endregion

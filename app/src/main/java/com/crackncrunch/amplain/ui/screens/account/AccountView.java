@@ -19,7 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.crackncrunch.amplain.R;
-import com.crackncrunch.amplain.data.storage.dto.UserDto;
 import com.crackncrunch.amplain.data.storage.dto.UserInfoDto;
 import com.crackncrunch.amplain.data.storage.dto.UserSettingsDto;
 import com.crackncrunch.amplain.di.DaggerService;
@@ -63,7 +62,6 @@ public class AccountView extends CoordinatorLayout implements IAccountView {
     SwitchCompat mNotificationPromoSw;
 
     private AccountScreen mScreen;
-    private UserDto mUserDto;
     private TextWatcher mWatcher;
     private AddressesAdapter mAdapter;
     private Uri mAvatarUri;

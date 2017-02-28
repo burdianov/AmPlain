@@ -52,11 +52,11 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
 
     private int mCustomState = 1;
 
-    public int getCustomState() {
+    int getCustomState() {
         return mCustomState;
     }
 
-    public void setCustomState(int customState) {
+    void setCustomState(int customState) {
         mCustomState = customState;
     }
 
