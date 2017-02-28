@@ -59,7 +59,7 @@ public class CatalogView extends AbstractView<CatalogScreen.CatalogPresenter>
 
     @Override
     public boolean viewOnBackPressed() {
-        return false;
+        return getCurrentProductView().viewOnBackPressed();
     }
 
     public CatalogAdapter getAdapter() {

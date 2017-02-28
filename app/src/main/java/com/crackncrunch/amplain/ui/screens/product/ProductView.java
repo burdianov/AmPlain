@@ -132,6 +132,10 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
 
     @Override
     public boolean viewOnBackPressed() {
+        if (isZoomed) {
+            startZoomTransition();
+            return true;
+        }
         return false;
     }
 
