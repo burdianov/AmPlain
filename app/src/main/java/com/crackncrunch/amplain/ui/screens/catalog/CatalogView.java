@@ -13,6 +13,7 @@ import com.crackncrunch.amplain.ui.screens.product.ProductView;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import me.relex.circleindicator.CircleIndicator;
 
 
 public class CatalogView extends AbstractView<CatalogScreen.CatalogPresenter>
@@ -22,6 +23,8 @@ public class CatalogView extends AbstractView<CatalogScreen.CatalogPresenter>
     Button mAddToCartBtn;
     @BindView(R.id.product_pager)
     ViewPager mProductPager;
+    @BindView(R.id.indicator)
+    CircleIndicator mIndicator;
 
     private CatalogAdapter mAdapter;
 
@@ -41,6 +44,8 @@ public class CatalogView extends AbstractView<CatalogScreen.CatalogPresenter>
     @Override
     public void showCatalogView() {
         mProductPager.setAdapter(mAdapter);
+        mIndicator.setViewPager(mProductPager);
+        mAdapter.registerDataSetObserver(mIndicator.getDataSetObserver());
     }
 
     @Override

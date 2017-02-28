@@ -231,13 +231,6 @@ public class AuthView extends RelativeLayout implements IAuthView {
 
     //endregion
 
-    @OnClick(R.id.logo_img)
-    void test() {
-        // TODO: 26-Feb-17 start in case of invalid input of login or password
-        //invalidLoginAnimation();
-        showLoginWithAnim();
-    }
-
     //region ==================== Animation ===================
 
     private void invalidLoginAnimation() {

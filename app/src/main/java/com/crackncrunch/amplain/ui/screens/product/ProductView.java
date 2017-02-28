@@ -263,10 +263,11 @@ public class ProductView extends AbstractView<ProductScreen.ProductPresenter> im
         ChangeBounds changeBounds = new ChangeBounds();
         ChangeImageTransform imageTransform = new ChangeImageTransform();
 
-        if (!isZoomed) {
+        // TODO: 28-Feb-17 Clarify why the below lines affect the zooming
+        /*if (!isZoomed) {
             changeBounds.setStartDelay(100);
             imageTransform.setStartDelay(100);
-        }
+        }*/
 
         set.addTransition(explode)
                 .addTransition(changeBounds)

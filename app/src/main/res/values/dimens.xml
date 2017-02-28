@@ -88,5 +88,5 @@
     <dimen name="fab_bottom_space">16dp</dimen>
     <dimen name="auth_frame_height">140dp</dimen>
     <dimen name="card_elevation_normal">4dp</dimen>
-    <dimen name="margin_above_add_to_cart_btn">37dp</dimen>
+    <dimen name="margin_above_add_to_cart_btn">14dp</dimen>
 </resources>
