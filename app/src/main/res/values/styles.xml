@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -207,5 +207,19 @@
 
     <style name="EditTextProfile">
         <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="RatingBar" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@color/color_grey_darker</item>
+        <item name="colorControlActivated">@color/colorAccent</item>
+    </style>
+
+    <style name="Base.Widget.Design.TabLayout" parent="android:Widget"
+           tools:override="true">
+        <item name="tabGravity">fill</item>
+        <item name="tabMaxWidth">@dimen/spacing_zero</item>
+        <item name="tabSelectedTextColor">@color/colorPrimaryDark</item>
+        <item name="tabIndicatorColor">@color/colorAccent</item>
+        <item name="tabIndicatorHeight">@dimen/line_size_2</item>
     </style>
 </resources>

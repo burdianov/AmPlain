@@ -332,6 +332,7 @@ public class RootActivity extends AppCompatActivity
     public void setTabLayout(ViewPager pager) {
         TabLayout tabView = new TabLayout(this); // создаем TabLayout
         tabView.setupWithViewPager(pager); // связываем его с ViewPager
+        tabView.setTabGravity(TabLayout.GRAVITY_FILL);
         mAppBar.addView(tabView); // добавляем табы в AppBar
         pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener
                 (tabView)); // регистрируем обработчик переключения по табам для ViewPager
