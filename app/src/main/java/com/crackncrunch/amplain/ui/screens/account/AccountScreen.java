@@ -19,9 +19,10 @@ import com.crackncrunch.amplain.di.scopes.AccountScope;
 import com.crackncrunch.amplain.flow.AbstractScreen;
 import com.crackncrunch.amplain.flow.Screen;
 import com.crackncrunch.amplain.mvp.models.AccountModel;
+import com.crackncrunch.amplain.mvp.presenters.AbstractPresenter;
 import com.crackncrunch.amplain.mvp.presenters.IAccountPresenter;
+import com.crackncrunch.amplain.mvp.presenters.MenuItemHolder;
 import com.crackncrunch.amplain.mvp.presenters.RootPresenter;
-import com.crackncrunch.amplain.mvp.presenters.SubscribePresenter;
 import com.crackncrunch.amplain.mvp.views.IRootView;
 import com.crackncrunch.amplain.ui.activities.RootActivity;
 import com.crackncrunch.amplain.ui.screens.address.AddressScreen;
@@ -94,7 +95,8 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
 
     //region ==================== Presenter ===================
 
-    public class AccountPresenter extends SubscribePresenter<AccountView>
+    public class AccountPresenter
+            extends AbstractPresenter<AccountView, AccountModel>
             implements IAccountPresenter {
 
         public static final String TAG = "AccountPresenter";
@@ -109,6 +111,34 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
         private File mPhotoFile;
         private Subscription mActivityResultSub;
         private Subscription mUserInfoSub;
+
+        @Override
+        protected void initActionBar() {
+            int drawable;
+            if (mCustomState == AccountView.EDIT_STATE) {
+                drawable = R.drawable.ic_done_black_24dp;
+            } else {
+                drawable = R.drawable.ic_edit_black_24dp;
+            }
+            mRootPresenter.newActionBarBuilder()
+                    .setTitle("Personal Profile")
+                    .addAction(new MenuItemHolder("To Cart", drawable,
+                            item -> {
+                                switchViewState();
+                                return true;
+                            }))
+                    .build();
+        }
+
+        @Override
+        protected void initFab() {
+            // empty
+        }
+
+        @Override
+        protected void initDagger(MortarScope scope) {
+            // empty
+        }
 
         //region ==================== Lifecycle ===================
 
@@ -151,13 +181,13 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
         private void subscribeOnUserInfoObs() {
             mUserInfoSub = subscribe(mAccountModel.getUserInfoObs(),
                     new ViewSubscriber<UserInfoDto>() {
-                @Override
-                public void onNext(UserInfoDto userInfoDto) {
-                    if (getView() != null) {
-                        getView().updateProfileInfo(userInfoDto);
-                    }
-                }
-            });
+                        @Override
+                        public void onNext(UserInfoDto userInfoDto) {
+                            if (getView() != null) {
+                                getView().updateProfileInfo(userInfoDto);
+                            }
+                        }
+                    });
         }
 
         private void subscribeOnAddressesObs() {
@@ -175,20 +205,20 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
         private void subscribeOnSettingsObs() {
             mSettingsSub = subscribe(mAccountModel.getUserSettingsObs(),
                     new ViewSubscriber<UserSettingsDto>() {
-                @Override
-                public void onNext(UserSettingsDto userSettingsDto) {
-                    if (getView() != null) {
-                        getView().initSettings(userSettingsDto);
-                    }
-                }
-            });
+                        @Override
+                        public void onNext(UserSettingsDto userSettingsDto) {
+                            if (getView() != null) {
+                                getView().initSettings(userSettingsDto);
+                            }
+                        }
+                    });
         }
 
         private void subscribeOnActivityResult() {
             Observable<ActivityResultDto> activityResultObs =
                     mRootPresenter.getActivityResultDtoObs()
-                        .filter(activityResultDto -> activityResultDto.getResultCode() == Activity
-                            .RESULT_OK);
+                            .filter(activityResultDto -> activityResultDto.getResultCode() == Activity
+                                    .RESULT_OK);
 
             mActivityResultSub = subscribe(activityResultObs, new ViewSubscriber<ActivityResultDto>() {
                 @Override
@@ -234,6 +264,7 @@ public class AccountScreen extends AbstractScreen<RootActivity.RootComponent> {
             if (getView() != null) {
                 getView().changeState();
             }
+            initActionBar();
         }
 
         @Override
