@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'android-apt'
 apply plugin: 'com.fernandocejas.frodo'
 apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'realm-android'
@@ -61,14 +60,14 @@ dependencies {
 
     // ButterKnife
     compile 'com.jakewharton:butterknife:8.4.0'
-    apt 'com.jakewharton:butterknife-compiler:8.4.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
 
     // CircleImageView
     compile 'de.hdodenhof:circleimageview:2.1.0'
 
     // Dagger 2
     compile 'com.google.dagger:dagger:2.6'
-    apt 'com.google.dagger:dagger-compiler:2.6'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.6'
 
     // Retrofit 2
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
