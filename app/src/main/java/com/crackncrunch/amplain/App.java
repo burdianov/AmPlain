@@ -32,9 +32,12 @@ public class App extends Application {
 
     @Override
     public Object getSystemService(String name) {
-        return mRootScope.hasService(name)
-                ? mRootScope.getService(name)
-                : super.getSystemService(name);
+        if (mRootScope != null) {
+            return mRootScope.hasService(name)
+                    ? mRootScope.getService(name)
+                    : super.getSystemService(name);
+        }
+        return super.getSystemService(name);
     }
 
     @Override
@@ -47,11 +50,9 @@ public class App extends Application {
         createRootActivityComponent();
 
         sContext = getApplicationContext();
-
         mRootScope = MortarScope.buildRootScope()
                 .withService(DaggerService.SERVICE_NAME, sAppComponent)
                 .build("Root");
-
         mRootActivityScope = mRootScope.buildChild()
                 .withService(DaggerService.SERVICE_NAME, mRootActivityRootComponent)
                 .withService(BundleServiceRunner.SERVICE_NAME, new BundleServiceRunner())

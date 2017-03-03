@@ -58,13 +58,10 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
     @DaggerScope(CatalogScreen.class)
     public interface Component {
         void inject(CatalogPresenter presenter);
-
         void inject(CatalogView view);
 
         CatalogModel getCatalogModel();
-
         Picasso getPicasso();
-
         RootPresenter getRootPresenter();
     }
 
@@ -72,7 +69,8 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
 
     //region ==================== Presenter ===================
 
-    public class CatalogPresenter extends AbstractPresenter<CatalogView,
+    public class CatalogPresenter
+            extends AbstractPresenter<CatalogView,
             CatalogModel> implements ICatalogPresenter {
 
         private int mLastPagerPosition;
