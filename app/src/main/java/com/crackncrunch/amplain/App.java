@@ -32,12 +32,9 @@ public class App extends Application {
 
     @Override
     public Object getSystemService(String name) {
-        if (mRootScope != null) {
-            return mRootScope.hasService(name)
-                    ? mRootScope.getService(name)
-                    : super.getSystemService(name);
-        }
-        return super.getSystemService(name);
+        return (mRootScope != null) && mRootScope.hasService(name)
+                ? mRootScope.getService(name)
+                : super.getSystemService(name);
     }
 
     @Override
@@ -65,7 +62,7 @@ public class App extends Application {
     public static AppComponent getAppComponent() {
         return sAppComponent;
     }
-    
+
     private void createAppComponent() {
         sAppComponent = DaggerAppComponent.builder()
                 .appModule(new AppModule(getApplicationContext()))
@@ -73,11 +70,11 @@ public class App extends Application {
     }
 
     private void createRootActivityComponent() {
-       mRootActivityRootComponent = DaggerRootActivity_RootComponent.builder()
-               .appComponent(sAppComponent)
-               .rootModule(new RootModule())
-               .picassoCacheModule(new PicassoCacheModule())
-               .build();
+        mRootActivityRootComponent = DaggerRootActivity_RootComponent.builder()
+                .appComponent(sAppComponent)
+                .rootModule(new RootModule())
+                .picassoCacheModule(new PicassoCacheModule())
+                .build();
     }
 
     public static RootActivity.RootComponent getmRootActivityRootComponent() {
