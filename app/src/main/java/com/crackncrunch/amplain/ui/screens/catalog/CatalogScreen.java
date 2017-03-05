@@ -70,8 +70,8 @@ public class CatalogScreen extends AbstractScreen<RootActivity.RootComponent> {
     //region ==================== Presenter ===================
 
     public class CatalogPresenter
-            extends AbstractPresenter<CatalogView,
-            CatalogModel> implements ICatalogPresenter {
+            extends AbstractPresenter<CatalogView, CatalogModel>
+            implements ICatalogPresenter {
 
         private int mLastPagerPosition;
 
