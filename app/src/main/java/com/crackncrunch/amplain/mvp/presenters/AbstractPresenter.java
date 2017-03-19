@@ -49,6 +49,7 @@ public abstract class AbstractPresenter<V extends AbstractView,
         mCompSubs = new CompositeSubscription();
         initActionBar();
         initFab();
+        setMenuItemChecked();
     }
 
     @Override
@@ -62,6 +63,12 @@ public abstract class AbstractPresenter<V extends AbstractView,
     @Nullable
     protected IRootView getRootView() {
         return mRootPresenter.getRootView();
+    }
+
+    private void setMenuItemChecked() {
+        if (getRootView() != null){
+            getRootView().setMenuItemChecked(this);
+        }
     }
 
     protected abstract class ViewSubscriber<T> extends Subscriber<T> {
