@@ -15,6 +15,9 @@ import com.crackncrunch.amplain.mvp.views.IRootView;
 import com.crackncrunch.amplain.ui.activities.RootActivity;
 import com.crackncrunch.amplain.ui.activities.SplashActivity;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.inject.Inject;
 
 import dagger.Provides;
@@ -71,12 +74,23 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
 
     //region ==================== Presenter ===================
 
-    public class AuthPresenter extends ViewPresenter<AuthView> implements IAuthPresenter {
+    public static class AuthPresenter extends ViewPresenter<AuthView>
+            implements IAuthPresenter {
 
         @Inject
         AuthModel mAuthModel;
         @Inject
         RootPresenter mRootPresenter;
+
+        public AuthPresenter() {
+
+        }
+
+        // for tests
+        public AuthPresenter(AuthModel authModel, RootPresenter rootPresenter) {
+            mAuthModel = authModel;
+            mRootPresenter = rootPresenter;
+        }
 
         @Override
         protected void onEnterScope(MortarScope scope) {
@@ -96,6 +110,8 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
                     getView().showLoginBtn();
                 }
                 getView().setTypeface();
+            } else {
+                getRootView().showError(new NullPointerException("Something is wrong"));
             }
         }
 
@@ -152,6 +168,12 @@ public class AuthScreen extends AbstractScreen<RootActivity.RootComponent> {
         @Override
         public boolean checkUserAuth() {
             return mAuthModel.isAuthUser();
+        }
+
+        public boolean isValidEmail(CharSequence target) {
+            Pattern pattern = Pattern.compile("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])");
+            Matcher matcher = pattern.matcher(target);
+            return matcher.matches();
         }
     }
 
